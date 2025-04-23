@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Twitter, Youtube } from "lucide-react";
+import { Twitter, Telegram } from "lucide-react";
 
 export function Footer() {
   return (
@@ -18,7 +18,7 @@ export function Footer() {
               Secure your .pepu domain on the PEPU network and build your Web3 identity.
             </p>
           </div>
-          
+
           <div>
             <h3 className="text-lg font-semibold mb-4 text-terminal-light-purple">Quick Links</h3>
             <ul className="space-y-2">
@@ -51,7 +51,7 @@ export function Footer() {
               </li>
               <li>
                 <a href="https://t.me/" target="_blank" rel="noopener noreferrer" className="flex items-center text-gray-400 hover:text-terminal-light-purple transition-colors">
-                  <Youtube className="mr-2 w-5 h-5" />
+                  <Telegram className="mr-2 w-5 h-5" />
                   Telegram
                 </a>
               </li>
