@@ -1,10 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader, CheckCheck, AlertTriangle, Send } from "lucide-react";
-import { useAccount, useBalance, useSwitchChain } from "wagmi";
+import { useAccount, useBalance, useSwitchChain, useChainId } from "wagmi";
 import { formatEther, parseEther } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { pepeUnchained, appConfig } from "@/config/chain";
@@ -18,8 +18,9 @@ interface DomainRegisterProps {
 }
 
 export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainRegisterProps) {
-  const { address, isConnected, chainId } = useAccount();
-  const { switchChain } = useSwitchChain();
+  const { address, isConnected } = useAccount();
+  const chainId = useChainId();
+  const { switchChain, isPending: isSwitchingChain } = useSwitchChain();
   const { toast } = useToast();
   
   const [registrationStatus, setRegistrationStatus] = useState<
@@ -37,6 +38,12 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
   // Check if user is on PEPU Mainnet (chainId 20314)
   const isCorrectNetwork = chainId === pepeUnchained.id;
   
+  const handleSwitchNetwork = () => {
+    if (switchChain) {
+      switchChain({ chainId: pepeUnchained.id });
+    }
+  };
+
   const handleRegister = async () => {
     if (!address || !isConnected) return;
     
@@ -102,15 +109,23 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
             {!isCorrectNetwork && (
               <Alert className="bg-amber-100 dark:bg-amber-900 border-amber-200 dark:border-amber-800">
                 <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <AlertDescription>
-                  You need to switch to PEPU Mainnet
+                <AlertDescription className="flex items-center justify-between">
+                  <span>You need to switch to PEPU Mainnet</span>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => switchChain({ chainId: pepeUnchained.id })}
+                    onClick={handleSwitchNetwork}
+                    disabled={isSwitchingChain}
                     className="ml-2 text-xs h-7 px-2"
                   >
-                    Switch Network
+                    {isSwitchingChain ? (
+                      <>
+                        <Loader className="mr-1 h-3 w-3 animate-spin" />
+                        Switching...
+                      </>
+                    ) : (
+                      "Switch Network"
+                    )}
                   </Button>
                 </AlertDescription>
               </Alert>
