@@ -2,23 +2,24 @@
 // PEPU Chain Configuration
 export const pepeUnchained = {
   id: 3409,
-  name: 'Pepe Unchained ',
-  network: 'Pepu',
+  name: 'Pepe Unchained',
+  network: 'PEPU',
   nativeCurrency: {
-    name: 'PEPU',
+    name: 'Pepe Unchained',
     symbol: 'PEPU',
     decimals: 18,
   },
   rpcUrls: {
-    default: { 'https://3409.rpc.thirdweb.com/'] },
-    public: { http: ['https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz'] },
+    default: { http: ['https://3409.rpc.thirdweb.com'] },
+    public: { http: ['https://3409.rpc.thirdweb.com'] },
   },
   blockExplorers: {
     default: {
-      name: 'Pepe Unchained Explorer',
+      name: 'PEPU Explorer',
       url: 'https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz/',
     },
   },
+  // Using PEPU logo or a default one if not available
   iconUrl: 'https://raw.githubusercontent.com/base-org/brand-kit/001c0e9b40a67799ebe0418671ac4e02a0c683ce/logo/in-use/icon/base-logo.svg',
   iconBackground: '#000000',
 };
