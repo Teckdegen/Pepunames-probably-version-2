@@ -10,7 +10,7 @@ export const pepeUnchained = {
     decimals: 18,
   },
   rpcUrls: {
-    default: { http: ['https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz'] },
+    default: { 'https://3409.rpc.thirdweb.com/'] },
     public: { http: ['https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz'] },
   },
   blockExplorers: {
