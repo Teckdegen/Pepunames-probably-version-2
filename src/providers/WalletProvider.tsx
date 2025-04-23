@@ -14,7 +14,6 @@ import { ReactNode } from 'react';
 const { connectors } = getDefaultWallets({
   appName: 'PNS PEPU NAME SERVICE',
   projectId: appConfig.walletConnectProjectId,
-  chains: [pepeUnchained],
 });
 
 // Create the wagmi config for v2

@@ -2,7 +2,7 @@
 // PEPU Chain Configuration
 export const pepeUnchained = {
   id: 20314,
-  name: 'PEPU Testnet',
+  name: 'PEPU Mainnet',
   network: 'pepe',
   nativeCurrency: {
     name: 'PEPU',
@@ -10,13 +10,13 @@ export const pepeUnchained = {
     decimals: 18,
   },
   rpcUrls: {
-    default: { http: ['https://rpc-pepe-unchained-test-ypyaeq1krb.t.conduit.xyz'] },
-    public: { http: ['https://rpc-pepe-unchained-test-ypyaeq1krb.t.conduit.xyz'] },
+    default: { http: ['https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz'] },
+    public: { http: ['https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz'] },
   },
   blockExplorers: {
     default: {
       name: 'Pepe Unchained Explorer',
-      url: 'https://explorer-pepe-unchained-test-ypyaeq1krb.t.conduit.xyz/',
+      url: 'https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz/',
     },
   },
   iconUrl: 'https://raw.githubusercontent.com/base-org/brand-kit/001c0e9b40a67799ebe0418671ac4e02a0c683ce/logo/in-use/icon/base-logo.svg',
