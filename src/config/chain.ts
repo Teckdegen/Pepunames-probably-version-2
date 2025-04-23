@@ -1,0 +1,33 @@
+
+// PEPU Chain Configuration
+export const pepeUnchained = {
+  id: 20314,
+  name: 'PEPU Testnet',
+  network: 'pepe',
+  nativeCurrency: {
+    name: 'PEPU',
+    symbol: 'PEPU',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ['https://rpc-pepe-unchained-test-ypyaeq1krb.t.conduit.xyz'] },
+    public: { http: ['https://rpc-pepe-unchained-test-ypyaeq1krb.t.conduit.xyz'] },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Pepe Unchained Explorer',
+      url: 'https://explorer-pepe-unchained-test-ypyaeq1krb.t.conduit.xyz/',
+    },
+  },
+  iconUrl: 'https://raw.githubusercontent.com/base-org/brand-kit/001c0e9b40a67799ebe0418671ac4e02a0c683ce/logo/in-use/icon/base-logo.svg',
+  iconBackground: '#000000',
+};
+
+// App Configuration
+export const appConfig = {
+  // Replace with your actual treasury wallet address
+  treasuryWallet: '0x0000000000000000000000000000000000000000',
+  registrationFee: '5000000000000000000000', // 5000 PEPU with 18 decimals
+  registrationPeriod: 31536000, // 1 year in seconds
+  walletConnectProjectId: 'd0b2dab20e3667281d013129f7f38720',
+};

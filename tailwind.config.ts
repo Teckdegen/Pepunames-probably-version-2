@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,12 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				terminal: {
+					purple: '#9b87f5',
+					'deep-purple': '#7E69AB',
+					'dark-purple': '#1A1F2C',
+					'light-purple': '#D6BCFA',
 				}
 			},
 			borderRadius: {
@@ -84,11 +91,35 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'terminal-cursor': {
+					'0%': { opacity: 0 },
+					'50%': { opacity: 1 },
+					'100%': { opacity: 0 }
+				},
+				'fade-in': {
+					'0%': { opacity: '0' },
+					'100%': { opacity: '1' }
+				},
+				'slide-up': {
+					'0%': { transform: 'translateY(10px)', opacity: '0' },
+					'100%': { transform: 'translateY(0)', opacity: '1' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'terminal-cursor': 'terminal-cursor 1s ease-in-out infinite',
+				'fade-in': 'fade-in 0.5s ease-out',
+				'slide-up': 'slide-up 0.5s ease-out'
+			},
+			fontFamily: {
+				mono: ['JetBrains Mono', 'monospace'],
+				sans: ['Inter', 'sans-serif']
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'gradient-terminal': 'linear-gradient(to bottom right, #9b87f5, #7E69AB)',
 			}
 		}
 	},
