@@ -34,6 +34,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
   const hasEnoughBalance = balance && 
     parseFloat(balance.formatted) >= parseFloat(formatEther(BigInt(appConfig.registrationFee)));
   
+  // Check if user is on PEPU Mainnet (chainId 20314)
   const isCorrectNetwork = chainId === pepeUnchained.id;
   
   const handleRegister = async () => {
@@ -102,7 +103,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
               <Alert className="bg-amber-100 dark:bg-amber-900 border-amber-200 dark:border-amber-800">
                 <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                 <AlertDescription>
-                  You need to switch to PEPU Testnet
+                  You need to switch to PEPU Mainnet
                   <Button 
                     variant="outline" 
                     size="sm" 
