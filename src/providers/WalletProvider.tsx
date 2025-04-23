@@ -1,29 +1,27 @@
 
 import '@rainbow-me/rainbowkit/styles.css';
-import { 
-  RainbowKitProvider, 
+import {
+  RainbowKitProvider,
   getDefaultWallets,
   lightTheme
 } from '@rainbow-me/rainbowkit';
-import {
-  http,
-  createConfig,
-  WagmiConfig
-} from 'wagmi';
+import { WagmiConfig, http, createConfig } from 'wagmi';
 import { pepeUnchained, appConfig } from '@/config/chain';
 import { ReactNode } from 'react';
 
-// Create wagmi config using the new API
-const config = createConfig({
-  appName: 'Pepu Name Service',
+const { wallets } = getDefaultWallets({
+  appName: 'PNS PEPU NAME SERVICE',
   projectId: appConfig.walletConnectProjectId,
   chains: [pepeUnchained],
+});
+
+const config = createConfig({
+  connectors: wallets,
   transports: {
     [pepeUnchained.id]: http(),
   },
 });
 
-// Custom theme for RainbowKit
 const customTheme = lightTheme({
   accentColor: '#9b87f5',
   accentColorForeground: 'white',
@@ -34,7 +32,7 @@ const customTheme = lightTheme({
 export function WalletProvider({ children }: { children: ReactNode }) {
   return (
     <WagmiConfig config={config}>
-      <RainbowKitProvider 
+      <RainbowKitProvider
         theme={customTheme}
         modalSize="compact"
       >
