@@ -3,12 +3,11 @@ import '@rainbow-me/rainbowkit/styles.css';
 import { 
   RainbowKitProvider, 
   getDefaultWallets,
-  createConfig,
   lightTheme
 } from '@rainbow-me/rainbowkit';
 import {
   http,
-  createConfig as wagmiCreateConfig,
+  createConfig,
   WagmiConfig
 } from 'wagmi';
 import { pepeUnchained, appConfig } from '@/config/chain';

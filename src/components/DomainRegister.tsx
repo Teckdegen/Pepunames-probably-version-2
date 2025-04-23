@@ -4,13 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader, CheckCheck, AlertTriangle, Send } from "lucide-react";
-import { useAccount, useBalance } from "wagmi";
+import { useAccount, useBalance, useSwitchChain } from "wagmi";
 import { formatEther, parseEther } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { pepeUnchained, appConfig } from "@/config/chain";
 import { completeDomainRegistration } from "@/lib/domains";
 import { useToast } from "@/hooks/use-toast";
-import { useSwitchChain } from "wagmi";
 
 interface DomainRegisterProps {
   selectedDomain: string;
@@ -19,7 +18,7 @@ interface DomainRegisterProps {
 }
 
 export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainRegisterProps) {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
   const { toast } = useToast();
   
@@ -35,7 +34,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
   const hasEnoughBalance = balance && 
     parseFloat(balance.formatted) >= parseFloat(formatEther(BigInt(appConfig.registrationFee)));
   
-  const isCorrectNetwork = useAccount().chainId === pepeUnchained.id;
+  const isCorrectNetwork = chainId === pepeUnchained.id;
   
   const handleRegister = async () => {
     if (!address || !isConnected) return;

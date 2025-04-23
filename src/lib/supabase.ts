@@ -36,6 +36,7 @@ export async function registerDomain(
         wallet_address: walletAddress,
         tx_hash: txHash,
         payment_confirmed: true,
+        payment_amount: '5000', // Adding the required payment_amount field
         expires_at: expiresAt.toISOString(),
         confirmation_time: new Date().toISOString(),
       }

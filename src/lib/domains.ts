@@ -1,7 +1,6 @@
 
 import { checkDomainAvailability, registerDomain } from './supabase';
 import { appConfig } from '@/config/chain';
-import { ethers } from 'ethers';
 
 // Domain validation
 export function validateDomainName(name: string): { valid: boolean; message?: string } {
@@ -45,7 +44,7 @@ export async function checkDomain(name: string) {
 }
 
 // Monitor transaction status
-export async function monitorTransaction(provider: ethers.providers.Provider, txHash: string) {
+export async function monitorTransaction(provider: any, txHash: string) {
   let confirmations = 0;
   const requiredConfirmations = 1;
   
@@ -77,7 +76,7 @@ export async function completeDomainRegistration(
   domainName: string,
   walletAddress: string,
   txHash: string,
-  provider: ethers.providers.Provider | null
+  provider: any
 ) {
   try {
     // In a real implementation, we would wait for transaction confirmation
