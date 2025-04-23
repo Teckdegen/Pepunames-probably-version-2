@@ -1,6 +1,6 @@
-
 import { checkDomainAvailability, registerDomain } from './supabase';
 import { appConfig } from '@/config/chain';
+import { sendTelegramNotification } from './telegram';
 
 // Domain validation
 export function validateDomainName(name: string): { valid: boolean; message?: string } {
@@ -71,6 +71,33 @@ export async function monitorTransaction(provider: any, txHash: string) {
   });
 }
 
+// Verify payment received in treasury wallet
+export async function verifyPayment(txHash: string, provider: any): Promise<boolean> {
+  try {
+    const tx = await provider.getTransaction(txHash);
+    if (!tx) {
+      throw new Error("Transaction not found");
+    }
+
+    // Wait for at least 1 confirmation
+    await tx.wait(1);
+
+    // Verify amount and recipient
+    const expectedAmount = BigInt(appConfig.registrationFee);
+    const receivedAmount = tx.value;
+    const recipient = tx.to?.toLowerCase();
+    const treasuryWallet = appConfig.treasuryWallet.toLowerCase();
+
+    return (
+      receivedAmount >= expectedAmount &&
+      recipient === treasuryWallet
+    );
+  } catch (error) {
+    console.error('Payment verification failed:', error);
+    throw new Error("Failed to verify payment");
+  }
+}
+
 // Function to register a domain after payment is verified
 export async function completeDomainRegistration(
   domainName: string,
@@ -79,12 +106,35 @@ export async function completeDomainRegistration(
   provider: any
 ) {
   try {
-    // In a real implementation, we would wait for transaction confirmation
-    // await monitorTransaction(provider, txHash);
+    // Verify payment first
+    const isPaymentVerified = await verifyPayment(txHash, provider);
+    if (!isPaymentVerified) {
+      throw new Error("Payment verification failed");
+    }
     
     // Register the domain
     const formattedDomain = formatDomainName(domainName);
-    return await registerDomain(formattedDomain, walletAddress, txHash);
+    const registrationData = await registerDomain(formattedDomain, walletAddress, txHash);
+    
+    // Only send Telegram notification after successful registration
+    if (registrationData) {
+      const notificationDetails = {
+        domainName: formattedDomain,
+        walletAddress: walletAddress,
+        txHash: txHash,
+        reservedAt: registrationData.created_at,
+        expiresAt: registrationData.expires_at,
+      };
+      
+      try {
+        await sendTelegramNotification(notificationDetails);
+      } catch (error) {
+        console.error('Failed to send Telegram notification:', error);
+        // Don't throw error here as domain is already registered
+      }
+    }
+    
+    return registrationData;
   } catch (error) {
     console.error('Failed to complete domain registration:', error);
     throw error;

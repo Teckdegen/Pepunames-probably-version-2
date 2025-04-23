@@ -73,16 +73,21 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
     setErrorMessage("");
     
     try {
+      const provider = window.ethereum;
+      if (!provider) {
+        throw new Error("No provider available");
+      }
+      
       const mockTxHash = `0x${Array.from({ length: 64 }, () => 
         Math.floor(Math.random() * 16).toString(16)).join('')}`;
-        
+      
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       await completeDomainRegistration(
         selectedDomain.replace('.pepu', ''),
         address,
         mockTxHash,
-        null
+        provider
       );
       
       setRegistrationStatus("success");
