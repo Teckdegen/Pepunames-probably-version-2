@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,12 +34,35 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
   const hasEnoughBalance = balance && 
     parseFloat(balance.formatted) >= parseFloat(formatEther(BigInt(appConfig.registrationFee)));
   
-  // Check if user is on PEPU Mainnet (chainId 20314)
   const isCorrectNetwork = chainId === pepeUnchained.id;
-  
-  const handleSwitchNetwork = () => {
-    if (switchChain) {
-      switchChain({ chainId: pepeUnchained.id });
+
+  const handleSwitchNetwork = async () => {
+    try {
+      if (typeof window !== "undefined" && window.ethereum) {
+        await window.ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [{
+            chainId: "0x4F1A",
+            chainName: "PEPU Mainnet",
+            nativeCurrency: {
+              name: "PEPU",
+              symbol: "PEPU",
+              decimals: 18
+            },
+            rpcUrls: ["https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz"],
+            blockExplorerUrls: ["https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz/"],
+          }]
+        });
+      } else if (switchChain) {
+        switchChain({ chainId: pepeUnchained.id });
+      }
+    } catch (error: any) {
+      console.error("Failed to add/switch to PEPU network:", error);
+      toast({
+        variant: "destructive",
+        title: "Network Error",
+        description: error?.message || "Unable to switch or add PEPU Mainnet in your wallet.",
+      });
     }
   };
 
@@ -51,20 +73,15 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
     setErrorMessage("");
     
     try {
-      // In a real implementation, you would send the transaction here
-      // For this demo, we'll simulate a successful transaction
       const mockTxHash = `0x${Array.from({ length: 64 }, () => 
         Math.floor(Math.random() * 16).toString(16)).join('')}`;
         
-      // Wait for a moment to simulate processing
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Register the domain
       await completeDomainRegistration(
         selectedDomain.replace('.pepu', ''),
         address,
         mockTxHash,
-        // In a real implementation, this would be the provider
         null
       );
       
@@ -110,10 +127,10 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
               <Alert className="bg-amber-100 dark:bg-amber-900 border-amber-200 dark:border-amber-800">
                 <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                 <AlertDescription className="flex items-center justify-between">
-                  <span>You need to switch to PEPU Mainnet</span>
+                  <span>You need to switch to PEPU Mainnet (Chain ID: 20314)</span>
                   <Button 
-                    variant="outline" 
-                    size="sm" 
+                    variant="outline"
+                    size="sm"
                     onClick={handleSwitchNetwork}
                     disabled={isSwitchingChain}
                     className="ml-2 text-xs h-7 px-2"
@@ -124,7 +141,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
                         Switching...
                       </>
                     ) : (
-                      "Switch Network"
+                      "Add & Switch"
                     )}
                   </Button>
                 </AlertDescription>
