@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -29,7 +28,6 @@ export default function SearchPage() {
     setStep("search");
   };
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -117,12 +115,13 @@ export default function SearchPage() {
             <h2 className="text-xl font-semibold mb-4 text-gradient">About Pepu Domains</h2>
             <div className="prose dark:prose-invert max-w-none">
               <p>
-                .pepu domains are the standard for digital identity on the PEPU network. 
-                Each domain costs 5,000 PEPU tokens and is registered for a period of 1 year.
+                Register your .pepu domain for just 5,000 PEPU tokens for the first year 
+                during our early access phase. Be part of the first 1,000 registrants to 
+                secure this special launch price!
               </p>
               <p>
-                After registration, your domain is stored on the blockchain, ensuring 
-                your ownership is secure and verifiable.
+                Each domain is stored securely on the PEPU blockchain, ensuring your 
+                digital identity remains protected and verifiable.
               </p>
             </div>
           </motion.div>
@@ -137,8 +136,8 @@ export default function SearchPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium mb-2">Secure Ownership</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">Your domain is secured by blockchain technology, ensuring only you control it.</p>
+              <h3 className="text-lg font-medium mb-2">Blockchain Security</h3>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">Your domain is secured by advanced blockchain technology for maximum protection.</p>
             </div>
             
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg p-5 shadow-md border border-terminal-purple/10 hover:shadow-glow-sm transition-shadow">
@@ -148,17 +147,17 @@ export default function SearchPage() {
                 </svg>
               </div>
               <h3 className="text-lg font-medium mb-2">Web3 Integration</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">Use your domain across the decentralized web with full compatibility.</p>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">Seamlessly connect with decentralized applications across the Web3 ecosystem.</p>
             </div>
             
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg p-5 shadow-md border border-terminal-purple/10 hover:shadow-glow-sm transition-shadow">
               <div className="rounded-full bg-terminal-purple/10 w-12 h-12 flex items-center justify-center mb-4">
                 <svg className="w-6 h-6 text-terminal-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium mb-2">No Renewal Fees</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">Once registered, your domain is yours forever with no additional fees.</p>
+              <h3 className="text-lg font-medium mb-2">Launch Discount</h3>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">50% off for first 1,000 domains during our early access phase.</p>
             </div>
           </motion.div>
         </div>
