@@ -1,7 +1,7 @@
 
 // PEPU Chain Configuration
 export const pepeUnchained = {
-  id: 20314,
+  id: 3409,
   name: 'PEPU Mainnet',
   network: 'pepe',
   nativeCurrency: {
