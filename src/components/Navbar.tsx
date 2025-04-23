@@ -1,12 +1,56 @@
-
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, Wallet } from "lucide-react";
 import { useState } from "react";
+import { useAccount, useDisconnect, useSwitchChain } from 'wagmi';
+import { pepeUnchained } from "@/config/chain";
+import { useToast } from "@/hooks/use-toast";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
+  const { switchChain } = useSwitchChain();
+  const { toast } = useToast();
+  
+  const handleSwitchNetwork = async () => {
+    try {
+      if (typeof window !== "undefined" && window.ethereum) {
+        await window.ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [{
+            chainId: "0xD51",
+            chainName: "PEPU Mainnet",
+            nativeCurrency: {
+              name: "PEPU",
+              symbol: "PEPU",
+              decimals: 18
+            },
+            rpcUrls: ["https://3409.rpc.thirdweb.com"],
+            blockExplorerUrls: ["https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz/"],
+          }]
+        });
+      } else if (switchChain) {
+        await switchChain({ chainId: pepeUnchained.id });
+      }
+    } catch (error: any) {
+      console.error("Failed to switch network:", error);
+      toast({
+        variant: "destructive",
+        title: "Network Error",
+        description: error?.message || "Unable to switch to PEPU Mainnet",
+      });
+    }
+  };
+
+  const handleDisconnect = () => {
+    disconnect();
+    toast({
+      title: "Wallet Disconnected",
+      description: "Your wallet has been disconnected successfully",
+    });
+  };
   
   return (
     <nav className="border-b border-terminal-purple/20 bg-white/80 backdrop-blur-md sticky top-0 z-50 dark:bg-gray-900/80">
@@ -32,10 +76,33 @@ export function Navbar() {
               </a>
             </div>
             
-            <ConnectButton 
-              showBalance={false}
-              chainStatus="icon"
-            />
+            <div className="flex items-center gap-4">
+              {isConnected && (
+                <>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSwitchNetwork}
+                    className="bg-terminal-purple text-white hover:bg-terminal-deep-purple"
+                  >
+                    <Wallet className="mr-2 h-4 w-4" />
+                    Switch to PEPU
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDisconnect}
+                    className="text-terminal-purple border-terminal-purple hover:bg-terminal-purple/10"
+                  >
+                    Disconnect
+                  </Button>
+                </>
+              )}
+              <ConnectButton 
+                showBalance={false}
+                chainStatus="icon"
+              />
+            </div>
           </div>
           
           <div className="md:hidden flex items-center">
@@ -75,8 +142,31 @@ export function Navbar() {
               Features
             </a>
             
-            <div className="px-4 pt-2">
-              <ConnectButton />
+            <div className="px-4 space-y-2">
+              {isConnected && (
+                <>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSwitchNetwork}
+                    className="w-full bg-terminal-purple text-white hover:bg-terminal-deep-purple"
+                  >
+                    <Wallet className="mr-2 h-4 w-4" />
+                    Switch to PEPU
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDisconnect}
+                    className="w-full text-terminal-purple border-terminal-purple hover:bg-terminal-purple/10"
+                  >
+                    Disconnect
+                  </Button>
+                </>
+              )}
+              <div className="pt-2">
+                <ConnectButton />
+              </div>
             </div>
           </div>
         )}
