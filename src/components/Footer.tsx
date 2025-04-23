@@ -1,6 +1,7 @@
 
 import { Link } from "react-router-dom";
-import { Twitter, Telegram } from "lucide-react";
+import { Twitter } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 
 export function Footer() {
   return (
@@ -51,7 +52,7 @@ export function Footer() {
               </li>
               <li>
                 <a href="https://t.me/" target="_blank" rel="noopener noreferrer" className="flex items-center text-gray-400 hover:text-terminal-light-purple transition-colors">
-                  <Telegram className="mr-2 w-5 h-5" />
+                  <MessageCircle className="mr-2 w-5 h-5" />
                   Telegram
                 </a>
               </li>

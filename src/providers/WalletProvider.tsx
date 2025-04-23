@@ -1,31 +1,33 @@
+
 import '@rainbow-me/rainbowkit/styles.css';
 import {
   RainbowKitProvider,
-  connectorsForWallets,
+  getDefaultWallets,
   lightTheme,
-  metaMaskWallet
 } from '@rainbow-me/rainbowkit';
-import { WagmiConfig, createConfig, http } from 'wagmi';
+import { configureChains, createConfig, WagmiConfig } from 'wagmi';
+import { publicProvider } from 'wagmi/providers/public';
 import { pepeUnchained, appConfig } from '@/config/chain';
 import { ReactNode } from 'react';
 
-// Only MetaMask is enabled for this project
-const connectors = connectorsForWallets([
-  {
-    groupName: 'Wallets',
-    wallets: [
-      metaMaskWallet({
-        projectId: appConfig.walletConnectProjectId,
-      }),
-    ],
-  },
-]);
+// Configure chains for RainbowKit
+const { chains, publicClient } = configureChains(
+  [pepeUnchained],
+  [publicProvider()]
+);
 
+// Set up wallet connectors
+const { connectors } = getDefaultWallets({
+  appName: 'PNS PEPU NAME SERVICE',
+  projectId: appConfig.walletConnectProjectId,
+  chains
+});
+
+// Create the wagmi config
 const wagmiConfig = createConfig({
+  autoConnect: true,
   connectors,
-  transports: {
-    [pepeUnchained.id]: http(),
-  },
+  publicClient
 });
 
 const customTheme = lightTheme({
@@ -41,7 +43,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       <RainbowKitProvider
         theme={customTheme}
         modalSize="compact"
-        chains={[pepeUnchained]}
+        chains={chains}
       >
         {children}
       </RainbowKitProvider>
