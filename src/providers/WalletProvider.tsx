@@ -3,48 +3,29 @@ import '@rainbow-me/rainbowkit/styles.css';
 import { 
   RainbowKitProvider, 
   getDefaultWallets,
-  connectorsForWallets,
-  darkTheme
+  createConfig,
+  lightTheme
 } from '@rainbow-me/rainbowkit';
 import {
-  metaMaskWallet,
-  coinbaseWallet,
-  walletConnectWallet,
-  trustWallet,
-} from '@rainbow-me/rainbowkit/wallets';
-import { configureChains, createConfig, WagmiConfig } from 'wagmi';
-import { publicProvider } from 'wagmi/providers/public';
+  http,
+  createConfig as wagmiCreateConfig,
+  WagmiConfig
+} from 'wagmi';
 import { pepeUnchained, appConfig } from '@/config/chain';
 import { ReactNode } from 'react';
 
-// Configure chains
-const { chains, publicClient } = configureChains(
-  [pepeUnchained],
-  [publicProvider()]
-);
-
-// Configure wallets
-const connectors = connectorsForWallets([
-  {
-    groupName: 'Recommended',
-    wallets: [
-      metaMaskWallet({ projectId: appConfig.walletConnectProjectId, chains }),
-      coinbaseWallet({ appName: 'Pepu Name Service', chains }),
-      walletConnectWallet({ projectId: appConfig.walletConnectProjectId, chains }),
-      trustWallet({ projectId: appConfig.walletConnectProjectId, chains }),
-    ],
+// Create wagmi config using the new API
+const config = createConfig({
+  appName: 'Pepu Name Service',
+  projectId: appConfig.walletConnectProjectId,
+  chains: [pepeUnchained],
+  transports: {
+    [pepeUnchained.id]: http(),
   },
-]);
-
-// Create wagmi config
-const wagmiConfig = createConfig({
-  autoConnect: true,
-  connectors,
-  publicClient,
 });
 
 // Custom theme for RainbowKit
-const customTheme = darkTheme({
+const customTheme = lightTheme({
   accentColor: '#9b87f5',
   accentColorForeground: 'white',
   borderRadius: 'medium',
@@ -53,9 +34,8 @@ const customTheme = darkTheme({
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   return (
-    <WagmiConfig config={wagmiConfig}>
+    <WagmiConfig config={config}>
       <RainbowKitProvider 
-        chains={chains} 
         theme={customTheme}
         modalSize="compact"
       >

@@ -1,11 +1,5 @@
 
-import { createClient } from '@supabase/supabase-js';
-
-// Replace these with your Supabase credentials
-const supabaseUrl = 'your-supabase-url';
-const supabaseKey = 'your-supabase-anon-key';
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from '@/integrations/supabase/client';
 
 // Domain related functions
 export async function checkDomainAvailability(domainName: string) {

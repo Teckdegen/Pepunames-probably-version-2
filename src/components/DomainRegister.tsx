@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader, CheckCheck, AlertTriangle, Send } from "lucide-react";
-import { useAccount, useBalance, useNetwork, useSwitchNetwork } from "wagmi";
+import { useAccount, useBalance } from "wagmi";
 import { formatEther, parseEther } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { pepeUnchained, appConfig } from "@/config/chain";
 import { completeDomainRegistration } from "@/lib/domains";
 import { useToast } from "@/hooks/use-toast";
+import { useSwitchChain } from "wagmi";
 
 interface DomainRegisterProps {
   selectedDomain: string;
@@ -19,8 +20,7 @@ interface DomainRegisterProps {
 
 export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainRegisterProps) {
   const { address, isConnected } = useAccount();
-  const { chain } = useNetwork();
-  const { switchNetwork } = useSwitchNetwork();
+  const { switchChain } = useSwitchChain();
   const { toast } = useToast();
   
   const [registrationStatus, setRegistrationStatus] = useState<
@@ -30,13 +30,12 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
   
   const { data: balance } = useBalance({
     address,
-    enabled: isConnected,
   });
   
   const hasEnoughBalance = balance && 
     parseFloat(balance.formatted) >= parseFloat(formatEther(BigInt(appConfig.registrationFee)));
   
-  const isCorrectNetwork = chain?.id === pepeUnchained.id;
+  const isCorrectNetwork = useAccount().chainId === pepeUnchained.id;
   
   const handleRegister = async () => {
     if (!address || !isConnected) return;
@@ -108,7 +107,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => switchNetwork?.(pepeUnchained.id)}
+                    onClick={() => switchChain({ chainId: pepeUnchained.id })}
                     className="ml-2 text-xs h-7 px-2"
                   >
                     Switch Network
