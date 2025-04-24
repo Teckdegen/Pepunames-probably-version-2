@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -101,9 +100,8 @@ export default {
 					to: { height: '0' }
 				},
 				'terminal-cursor': {
-					'0%': { opacity: '0' },
-					'50%': { opacity: '1' },
-					'100%': { opacity: '0' }
+					'0%, 100%': { opacity: '0' },
+					'50%': { opacity: '1' }
 				},
 				'fade-in': {
 					'0%': { opacity: '0' },
@@ -141,23 +139,18 @@ export default {
 					'100%': { transform: 'translateY(0)' }
 				},
 				'glow-pulse': {
-					'0%': { 
+					'0%, 100%': { 
 						boxShadow: '0 0 20px rgba(179, 71, 234, 0.5)',
 						transform: 'scale(1)'
 					},
 					'50%': { 
 						boxShadow: '0 0 40px rgba(0, 255, 159, 0.7)',
 						transform: 'scale(1.02)'
-					},
-					'100%': { 
-						boxShadow: '0 0 20px rgba(179, 71, 234, 0.5)',
-						transform: 'scale(1)'
 					}
 				},
 				'float': {
-					'0%': { transform: 'translateY(0)' },
-					'50%': { transform: 'translateY(-20px)' },
-					'100%': { transform: 'translateY(0)' }
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-20px)' }
 				},
 				'shine': {
 					'0%': { transform: 'translateX(-100%)' },
