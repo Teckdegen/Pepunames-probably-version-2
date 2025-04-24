@@ -28,7 +28,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
     "idle" | "sending" | "processing" | "success" | "error"
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [txHash, setTxHash] = useState("");
+  const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined);
   
   // Get user balance
   const { data: balance } = useBalance({
@@ -38,8 +38,8 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
   // Transaction hooks
   const { sendTransaction, isPending: isSendingTx } = useSendTransaction();
   const { isLoading: isWaitingTx, isSuccess: txConfirmed } = useWaitForTransactionReceipt({
-    hash: txHash ? `0x${txHash.replace(/^0x/, '')}` : undefined,
-    enabled: !!txHash,
+    hash: txHash,
+    // Remove the 'enabled' property as it's not available in this hook's options
   });
   
   // Calculate if user has enough balance
@@ -98,7 +98,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
       }, {
         onSuccess: (data) => {
           // Store transaction hash
-          setTxHash(data.hash);
+          setTxHash(data); // Directly use the hash returned by sendTransaction
           setRegistrationStatus("processing");
           toast({
             title: "Transaction Sent",
@@ -139,7 +139,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
       await completeDomainRegistration(
         selectedDomain.replace('.pepu', ''),
         address,
-        txHash,
+        txHash, // Pass the transaction hash string
         provider
       );
       

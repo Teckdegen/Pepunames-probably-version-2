@@ -1,3 +1,4 @@
+
 import { checkDomainAvailability, registerDomain } from './supabase';
 import { appConfig } from '@/config/chain';
 import { sendTelegramNotification } from './telegram';
@@ -89,13 +90,15 @@ export async function monitorTransaction(provider: any, txHash: string) {
 }
 
 // Verify payment received in treasury wallet with enhanced validation
-export async function verifyPayment(txHash: string, provider: any): Promise<boolean> {
+export async function verifyPayment(txHash: string | `0x${string}`, provider: any): Promise<boolean> {
   try {
-    if (!txHash || txHash.length !== 66 || !txHash.startsWith('0x')) {
+    const hashString = typeof txHash === 'string' ? txHash : txHash.toString();
+    
+    if (!hashString || hashString.length !== 66 || !hashString.startsWith('0x')) {
       throw new Error("Invalid transaction hash format");
     }
 
-    const tx = await provider.getTransaction(txHash);
+    const tx = await provider.getTransaction(hashString);
     if (!tx) {
       throw new Error("Transaction not found");
     }
@@ -128,26 +131,28 @@ export async function verifyPayment(txHash: string, provider: any): Promise<bool
 export async function completeDomainRegistration(
   domainName: string,
   walletAddress: string,
-  txHash: string,
+  txHash: string | `0x${string}`,
   provider: any
 ) {
   try {
+    const hashString = typeof txHash === 'string' ? txHash : txHash.toString();
+    
     // Verify payment first
-    const isPaymentVerified = await verifyPayment(txHash, provider);
+    const isPaymentVerified = await verifyPayment(hashString, provider);
     if (!isPaymentVerified) {
       throw new Error("Payment verification failed");
     }
     
     // Register the domain
     const formattedDomain = formatDomainName(domainName);
-    const registrationData = await registerDomain(formattedDomain, walletAddress, txHash);
+    const registrationData = await registerDomain(formattedDomain, walletAddress, hashString);
     
     // Only send Telegram notification after successful registration
     if (registrationData) {
       const notificationDetails = {
         domainName: formattedDomain,
         walletAddress: walletAddress,
-        txHash: txHash,
+        txHash: hashString,
         reservedAt: registrationData.created_at,
         expiresAt: registrationData.expires_at,
       };
