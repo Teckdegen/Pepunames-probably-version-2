@@ -8,11 +8,11 @@ export function Hero() {
   const appearRef = useScrollAppear();
 
   return (
-    <div className="relative overflow-hidden min-h-[90vh] flex items-center justify-center bg-gradient-radial from-cyber-purple/20 to-transparent">
+    <div className="relative overflow-hidden min-h-[90vh] flex items-center justify-center bg-[#f5f3ff]">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-neon-glow opacity-30" />
-      <div className="absolute top-20 -right-20 w-96 h-96 bg-cyber-purple opacity-20 rounded-full blur-3xl animate-float" />
-      <div className="absolute -bottom-32 -left-20 w-96 h-96 bg-cyber-neon opacity-20 rounded-full blur-3xl animate-float delay-1000" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#f5f3ff] via-[#e9d5ff] to-[#f5f3ff] opacity-80" />
+      <div className="absolute top-20 -right-20 w-96 h-96 bg-[#c4b5fd] opacity-20 rounded-full blur-3xl" />
+      <div className="absolute -bottom-32 -left-20 w-96 h-96 bg-[#a78bfa] opacity-20 rounded-full blur-3xl" />
       
       <div
         ref={appearRef}
@@ -21,38 +21,38 @@ export function Hero() {
       >
         {/* Title Section */}
         <div className="space-y-6">
-          <h1 className="text-6xl md:text-8xl font-bold tracking-tight bg-gradient-to-r from-cyber-purple via-cyber-pink to-cyber-neon bg-clip-text text-transparent animate-glow-pulse">
+          <h1 className="text-6xl md:text-8xl font-bold tracking-tight text-[#6d28d9] animate-fade-in">
             PEPU NAME SERVICE
           </h1>
-          <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
-            Secure your digital identity on the PEPU network with a <span className="font-bold text-cyber-neon">.pepu</span> domain name
+          <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">
+            Secure your digital identity on the PEPU network with a <span className="font-bold text-[#7c3aed]">.pepu</span> domain name
           </p>
         </div>
         
         {/* Domain Search Box */}
         <div className="w-full max-w-2xl mx-auto">
-          <div className="glass-card dark:neo-blur p-8 rounded-2xl border border-cyber-purple/30 shadow-cyber space-y-6">
+          <div className="bg-white/70 backdrop-blur-xl p-8 rounded-2xl border border-[#e9d5ff] shadow-lg space-y-6">
             {/* Domain Input Display */}
-            <div className="font-mono text-2xl text-cyber-neon relative bg-black/20 p-4 rounded-xl backdrop-blur-sm">
-              <span className="text-cyber-pink mr-2">$</span>
+            <div className="font-mono text-2xl text-[#6d28d9] relative bg-[#f5f3ff] p-4 rounded-xl">
+              <span className="text-[#7c3aed] mr-2">$</span>
               yourname.pepu
-              <span className="animate-pulse ml-1">_</span>
+              <span className="animate-pulse ml-1">|</span>
             </div>
             
             {/* Special Offer Box */}
-            <div className="bg-cyber-purple/10 backdrop-blur-xl p-6 rounded-xl border border-cyber-purple/20">
+            <div className="bg-[#f5f3ff] p-6 rounded-xl border border-[#e9d5ff]">
               <div className="flex items-center justify-center gap-3 mb-2">
-                <Rocket className="text-cyber-pink h-6 w-6 animate-float" />
-                <h3 className="text-xl font-semibold text-white">
+                <Rocket className="text-[#7c3aed] h-6 w-6 animate-bounce" />
+                <h3 className="text-xl font-semibold text-[#6d28d9]">
                   Launch Special: First 1,000 domains
                 </h3>
               </div>
               <div className="flex items-center justify-center gap-2 text-lg">
-                <span className="text-gray-300">for only</span>
-                <span className="text-cyber-neon font-bold text-2xl">5,000 PEPU</span>
-                <span className="text-gray-300">tokens</span>
+                <span className="text-gray-600">for only</span>
+                <span className="text-[#7c3aed] font-bold text-2xl">5,000 PEPU</span>
+                <span className="text-gray-600">tokens</span>
               </div>
-              <div className="mt-3 text-sm text-gray-400 flex items-center justify-center gap-2">
+              <div className="mt-3 text-sm text-gray-500 flex items-center justify-center gap-2">
                 <span>50% off first year</span>
                 <span>•</span>
                 <span>Limited time offer</span>
@@ -68,7 +68,7 @@ export function Hero() {
           <Button
             asChild
             size="lg"
-            className="bg-gradient-to-r from-cyber-purple to-cyber-neon hover:opacity-90 text-white shadow-neon hover:shadow-cyber transition-all duration-300 text-lg min-w-[200px]"
+            className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white shadow-md hover:shadow-lg transition-all duration-300 text-lg min-w-[200px]"
           >
             <Link to="/search">Search Domains</Link>
           </Button>
@@ -76,7 +76,7 @@ export function Hero() {
             asChild
             variant="outline"
             size="lg"
-            className="border-cyber-purple text-cyber-neon hover:bg-cyber-purple/10 text-lg min-w-[200px]"
+            className="border-[#7c3aed] text-[#7c3aed] hover:bg-[#7c3aed]/10 text-lg min-w-[200px]"
           >
             <a href="#features">Learn More</a>
           </Button>
