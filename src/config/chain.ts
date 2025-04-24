@@ -27,7 +27,7 @@ export const pepeUnchained = {
 // App Configuration
 export const appConfig = {
   // Replace with your actual treasury wallet address
-  treasuryWallet: '0x0000000000000000000000000000000000000000',
+  treasuryWallet: '0x3f446E802A9c8A4cEB8f2A7dd998B44cb4bD9172',
   registrationFee: '5000000000000000000000', // 5000 PEPU with 18 decimals
   registrationPeriod: 31536000, // 1 year in seconds
   walletConnectProjectId: 'd0b2dab20e3667281d013129f7f38720',
