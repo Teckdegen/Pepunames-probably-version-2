@@ -1,6 +1,7 @@
 import { checkDomainAvailability, registerDomain } from './supabase';
 import { appConfig } from '@/config/chain';
 import { sendTelegramNotification } from './telegram';
+import { ethers } from 'ethers';
 
 // Domain validation
 export function validateDomainName(name: string): { valid: boolean; message?: string } {
@@ -39,27 +40,47 @@ export async function checkDomain(name: string) {
   return checkDomainAvailability(formattedName);
 }
 
-// Monitor transaction status
+// Monitor transaction status with more robust error handling
 export async function monitorTransaction(provider: any, txHash: string) {
   let confirmations = 0;
   const requiredConfirmations = 1;
+  const maxAttempts = 30; // Max number of attempts
+  let attempts = 0;
   
   return new Promise((resolve, reject) => {
     const checkTx = async () => {
       try {
+        if (attempts >= maxAttempts) {
+          reject(new Error("Transaction confirmation timed out"));
+          return;
+        }
+        
+        attempts++;
         const tx = await provider.getTransaction(txHash);
+        
         if (tx && tx.confirmations >= requiredConfirmations) {
           // Payment confirmed
           resolve(tx);
         } else if (!tx) {
-          // Transaction not found or failed
-          reject(new Error("Transaction failed or not found"));
+          // If no transaction after a few attempts, probably failed or hash is wrong
+          if (attempts > 5) {
+            reject(new Error("Transaction not found or failed"));
+          } else {
+            // Keep checking, might just be network delay
+            setTimeout(checkTx, 5000);
+          }
         } else {
           // Not enough confirmations yet, check again in 5 seconds
           setTimeout(checkTx, 5000);
         }
       } catch (error) {
-        reject(error);
+        console.error('Error monitoring transaction:', error);
+        if (attempts >= 5) {
+          reject(error);
+        } else {
+          // Try again in case of temporary network issue
+          setTimeout(checkTx, 5000);
+        }
       }
     };
     
@@ -67,9 +88,13 @@ export async function monitorTransaction(provider: any, txHash: string) {
   });
 }
 
-// Verify payment received in treasury wallet
+// Verify payment received in treasury wallet with enhanced validation
 export async function verifyPayment(txHash: string, provider: any): Promise<boolean> {
   try {
+    if (!txHash || txHash.length !== 66 || !txHash.startsWith('0x')) {
+      throw new Error("Invalid transaction hash format");
+    }
+
     const tx = await provider.getTransaction(txHash);
     if (!tx) {
       throw new Error("Transaction not found");
@@ -78,19 +103,24 @@ export async function verifyPayment(txHash: string, provider: any): Promise<bool
     // Wait for at least 1 confirmation
     await tx.wait(1);
 
-    // Verify amount and recipient
+    // Verify amount and recipient with strict validation
     const expectedAmount = BigInt(appConfig.registrationFee);
     const receivedAmount = tx.value;
     const recipient = tx.to?.toLowerCase();
     const treasuryWallet = appConfig.treasuryWallet.toLowerCase();
 
-    return (
-      receivedAmount >= expectedAmount &&
-      recipient === treasuryWallet
-    );
+    if (receivedAmount < expectedAmount) {
+      throw new Error(`Insufficient payment: received ${ethers.utils.formatEther(receivedAmount)} PEPU, expected ${ethers.utils.formatEther(expectedAmount)} PEPU`);
+    }
+    
+    if (recipient !== treasuryWallet) {
+      throw new Error("Payment sent to incorrect wallet address");
+    }
+
+    return true;
   } catch (error) {
     console.error('Payment verification failed:', error);
-    throw new Error("Failed to verify payment");
+    throw error;
   }
 }
 

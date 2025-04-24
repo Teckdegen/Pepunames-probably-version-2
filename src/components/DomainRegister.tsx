@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader, CheckCheck, AlertTriangle, Send } from "lucide-react";
-import { useAccount, useBalance, useSwitchChain, useChainId } from "wagmi";
+import { useAccount, useBalance, useSwitchChain, useChainId, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { formatEther, parseEther } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { pepeUnchained, appConfig } from "@/config/chain";
@@ -23,34 +23,50 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
   const { switchChain, isPending: isSwitchingChain } = useSwitchChain();
   const { toast } = useToast();
   
+  // State for transaction flow
   const [registrationStatus, setRegistrationStatus] = useState<
-    "idle" | "processing" | "success" | "error"
+    "idle" | "sending" | "processing" | "success" | "error"
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [txHash, setTxHash] = useState("");
   
+  // Get user balance
   const { data: balance } = useBalance({
     address,
   });
   
+  // Transaction hooks
+  const { sendTransaction, isPending: isSendingTx } = useSendTransaction();
+  const { isLoading: isWaitingTx, isSuccess: txConfirmed } = useWaitForTransactionReceipt({
+    hash: txHash ? `0x${txHash.replace(/^0x/, '')}` : undefined,
+    enabled: !!txHash,
+  });
+  
+  // Calculate if user has enough balance
+  const registrationFeeInPepu = parseFloat(formatEther(BigInt(appConfig.registrationFee)));
   const hasEnoughBalance = balance && 
-    parseFloat(balance.formatted) >= parseFloat(formatEther(BigInt(appConfig.registrationFee)));
+    parseFloat(balance.formatted) >= registrationFeeInPepu;
   
   const isCorrectNetwork = chainId === pepeUnchained.id;
 
+  // Handle network switching
   const handleSwitchNetwork = async () => {
     try {
       if (typeof window !== "undefined" && window.ethereum) {
         await window.ethereum.request({
           method: "wallet_addEthereumChain",
           params: [{
-            chainId: "0x4F1A",
+            chainId: "0xD51",  // 3409 in hex
             chainName: "PEPU Mainnet",
             nativeCurrency: {
               name: "PEPU",
               symbol: "PEPU",
               decimals: 18
             },
-            rpcUrls: ["https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz"],
+            rpcUrls: [
+              "https://rpc-pepe-unchained-gupg0lo9wf.t.conduit.xyz",
+              "https://3409.rpc.thirdweb.com"
+            ],
             blockExplorerUrls: ["https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz/"],
           }]
         });
@@ -67,36 +83,38 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
     }
   };
 
+  // Handle domain registration
   const handleRegister = async () => {
-    if (!address || !isConnected) return;
-    
-    setRegistrationStatus("processing");
-    setErrorMessage("");
+    if (!address || !isConnected || !isCorrectNetwork || !hasEnoughBalance) return;
     
     try {
-      const provider = window.ethereum;
-      if (!provider) {
-        throw new Error("No provider available");
-      }
+      setRegistrationStatus("sending");
+      setErrorMessage("");
       
-      const mockTxHash = `0x${Array.from({ length: 64 }, () => 
-        Math.floor(Math.random() * 16).toString(16)).join('')}`;
-      
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      await completeDomainRegistration(
-        selectedDomain.replace('.pepu', ''),
-        address,
-        mockTxHash,
-        provider
-      );
-      
-      setRegistrationStatus("success");
-      onSuccess(mockTxHash);
-      
-      toast({
-        title: "Domain Registered!",
-        description: `You are now the owner of ${selectedDomain}`,
+      // Send actual transaction to treasury wallet
+      sendTransaction({
+        to: appConfig.treasuryWallet,
+        value: BigInt(appConfig.registrationFee),
+      }, {
+        onSuccess: (data) => {
+          // Store transaction hash
+          setTxHash(data.hash);
+          setRegistrationStatus("processing");
+          toast({
+            title: "Transaction Sent",
+            description: "Your payment is being processed...",
+          });
+        },
+        onError: (error) => {
+          console.error("Transaction error:", error);
+          setRegistrationStatus("error");
+          setErrorMessage(error.message || "Failed to send transaction");
+          toast({
+            variant: "destructive",
+            title: "Transaction Failed",
+            description: error.message || "Failed to send transaction",
+          });
+        }
       });
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -110,6 +128,45 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
       });
     }
   };
+  
+  // Process domain registration after transaction confirms
+  const processRegistration = async () => {
+    if (!txHash || !address) return;
+    
+    try {
+      // Complete domain registration process
+      const provider = window.ethereum;
+      await completeDomainRegistration(
+        selectedDomain.replace('.pepu', ''),
+        address,
+        txHash,
+        provider
+      );
+      
+      setRegistrationStatus("success");
+      onSuccess(txHash);
+      
+      toast({
+        title: "Domain Registered!",
+        description: `You are now the owner of ${selectedDomain}`,
+      });
+    } catch (error: any) {
+      console.error("Registration processing error:", error);
+      setRegistrationStatus("error");
+      setErrorMessage(error.message || "Failed to process registration");
+      
+      toast({
+        variant: "destructive",
+        title: "Registration Processing Failed",
+        description: error.message || "Your payment was successful, but there was an issue finalizing your registration.",
+      });
+    }
+  };
+  
+  // Watch for transaction confirmation and process registration
+  if (txConfirmed && registrationStatus === "processing") {
+    processRegistration();
+  }
 
   return (
     <Card className="bg-black/40 backdrop-blur-xl border-cyber-purple/30 shadow-cyber relative overflow-hidden">
@@ -124,7 +181,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
           <span className="font-mono">{selectedDomain}</span>
         </CardTitle>
         <CardDescription className="text-gray-300">
-          Secure your .pepu domain for 5,000 PEPU tokens
+          Secure your .pepu domain for {registrationFeeInPepu} PEPU tokens
         </CardDescription>
       </CardHeader>
       
@@ -142,7 +199,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
               <Alert className="bg-amber-900/30 border-amber-500/30 backdrop-blur-md">
                 <AlertTriangle className="h-4 w-4 text-amber-400" />
                 <AlertDescription className="flex items-center justify-between text-amber-200">
-                  <span>Switch to PEPU Mainnet (Chain ID: 20314)</span>
+                  <span>Switch to PEPU Mainnet (Chain ID: 3409)</span>
                   <Button 
                     variant="outline"
                     size="sm"
@@ -167,7 +224,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
               <Alert variant="destructive" className="bg-red-900/30 border-red-500/30 backdrop-blur-md">
                 <AlertTriangle className="h-4 w-4 text-red-400" />
                 <AlertDescription className="text-red-200">
-                  Insufficient PEPU balance. You need at least 5,000 PEPU.
+                  Insufficient PEPU balance. You need at least {registrationFeeInPepu} PEPU.
                 </AlertDescription>
               </Alert>
             )}
@@ -180,7 +237,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Price:</span>
-                  <span className="font-mono text-cyber-pink">5,000 PEPU</span>
+                  <span className="font-mono text-cyber-pink">{registrationFeeInPepu} PEPU</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Duration:</span>
@@ -209,7 +266,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
         <Button 
           variant="outline"
           onClick={onReset}
-          disabled={registrationStatus === "processing"}
+          disabled={registrationStatus === "sending" || registrationStatus === "processing"}
           className="border-cyber-purple/30 text-gray-300 hover:bg-cyber-purple/10"
         >
           Cancel
@@ -220,7 +277,8 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
             !isConnected || 
             !isCorrectNetwork || 
             !hasEnoughBalance || 
-            registrationStatus === "processing" || 
+            registrationStatus === "sending" || 
+            registrationStatus === "processing" ||
             registrationStatus === "success"
           }
           onClick={handleRegister}
@@ -231,10 +289,16 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
               Register Domain
             </>
           )}
+          {registrationStatus === "sending" && (
+            <>
+              <Loader className="mr-2 h-4 w-4 animate-spin" />
+              Sending Transaction...
+            </>
+          )}
           {registrationStatus === "processing" && (
             <>
               <Loader className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
+              Confirming Payment...
             </>
           )}
           {registrationStatus === "success" && (
