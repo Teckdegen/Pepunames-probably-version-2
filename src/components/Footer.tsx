@@ -43,13 +43,13 @@ export function Footer() {
             <h3 className="text-lg font-semibold mb-4 text-terminal-light-purple">Connect</h3>
             <ul className="space-y-2">
               <li>
-                <a href="https://twitter.com/" target="_blank" rel="noopener noreferrer" className="flex items-center text-gray-400 hover:text-terminal-light-purple transition-colors">
+                <a href="https://x.com/pepudomains/" target="_blank" rel="noopener noreferrer" className="flex items-center text-gray-400 hover:text-terminal-light-purple transition-colors">
                   <Twitter className="mr-2 w-5 h-5" />
                   Twitter
                 </a>
               </li>
               <li>
-                <a href="https://t.me/" target="_blank" rel="noopener noreferrer" className="flex items-center text-gray-400 hover:text-terminal-light-purple transition-colors">
+                <a href="https://t.me/pepudomains/" target="_blank" rel="noopener noreferrer" className="flex items-center text-gray-400 hover:text-terminal-light-purple transition-colors">
                   <MessageCircle className="mr-2 w-5 h-5" />
                   Telegram
                 </a>
