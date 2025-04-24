@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -111,34 +112,43 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
   };
 
   return (
-    <Card className="w-full border border-terminal-purple/30 shadow-lg">
-      <CardHeader>
+    <Card className="bg-black/40 backdrop-blur-xl border-cyber-purple/30 shadow-cyber relative overflow-hidden">
+      <div className="absolute inset-0 bg-neon-glow opacity-20 pointer-events-none" />
+      <div className="absolute inset-0 bg-glass-shine animate-shine pointer-events-none" />
+      
+      <CardHeader className="relative z-10">
         <CardTitle className="text-xl flex items-center gap-2">
-          <span className="text-terminal-purple">Register</span> {selectedDomain}
+          <span className="bg-gradient-to-r from-cyber-neon to-cyber-purple bg-clip-text text-transparent">
+            Register
+          </span> 
+          <span className="font-mono">{selectedDomain}</span>
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-gray-300">
           Secure your .pepu domain for 5,000 PEPU tokens
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      
+      <CardContent className="space-y-4 relative z-10">
         {!isConnected ? (
-          <div className="bg-secondary/50 p-4 rounded-lg text-center">
-            <p className="mb-3">Connect your wallet to register this domain</p>
-            <ConnectButton />
+          <div className="bg-glass-dark backdrop-blur-md rounded-lg p-6 text-center border border-white/10">
+            <p className="mb-4 text-gray-300">Connect your wallet to register this domain</p>
+            <div className="inline-block animate-float">
+              <ConnectButton />
+            </div>
           </div>
         ) : (
           <>
             {!isCorrectNetwork && (
-              <Alert className="bg-amber-100 dark:bg-amber-900 border-amber-200 dark:border-amber-800">
-                <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <AlertDescription className="flex items-center justify-between">
-                  <span>You need to switch to PEPU Mainnet (Chain ID: 20314)</span>
+              <Alert className="bg-amber-900/30 border-amber-500/30 backdrop-blur-md">
+                <AlertTriangle className="h-4 w-4 text-amber-400" />
+                <AlertDescription className="flex items-center justify-between text-amber-200">
+                  <span>Switch to PEPU Mainnet (Chain ID: 20314)</span>
                   <Button 
                     variant="outline"
                     size="sm"
                     onClick={handleSwitchNetwork}
                     disabled={isSwitchingChain}
-                    className="ml-2 text-xs h-7 px-2"
+                    className="ml-2 text-xs h-7 px-2 border-amber-500/50 text-amber-300 hover:bg-amber-500/20"
                   >
                     {isSwitchingChain ? (
                       <>
@@ -154,52 +164,58 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
             )}
           
             {!hasEnoughBalance && (
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
+              <Alert variant="destructive" className="bg-red-900/30 border-red-500/30 backdrop-blur-md">
+                <AlertTriangle className="h-4 w-4 text-red-400" />
+                <AlertDescription className="text-red-200">
                   Insufficient PEPU balance. You need at least 5,000 PEPU.
                 </AlertDescription>
               </Alert>
             )}
           
-            <div className="bg-terminal-dark-purple text-white p-4 rounded-md font-mono">
-              <div className="flex justify-between mb-2">
-                <span>Domain:</span>
-                <span>{selectedDomain}</span>
-              </div>
-              <div className="flex justify-between mb-2">
-                <span>Price:</span>
-                <span>5,000 PEPU</span>
-              </div>
-              <div className="flex justify-between mb-2">
-                <span>Duration:</span>
-                <span>1 year</span>
-              </div>
-              <div className="flex justify-between pt-2 border-t border-white/20">
-                <span>Your wallet:</span>
-                <span className="truncate max-w-[180px]">{address}</span>
+            <div className="bg-terminal-dark-purple/80 backdrop-blur-md text-white p-6 rounded-lg border border-cyber-purple/20 shadow-neon">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400">Domain:</span>
+                  <span className="font-mono text-cyber-neon">{selectedDomain}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400">Price:</span>
+                  <span className="font-mono text-cyber-pink">5,000 PEPU</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400">Duration:</span>
+                  <span className="font-mono text-cyber-yellow">1 year</span>
+                </div>
+                <div className="pt-3 border-t border-white/10">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Your wallet:</span>
+                    <span className="font-mono text-cyber-blue truncate max-w-[180px]">{address}</span>
+                  </div>
+                </div>
               </div>
             </div>
             
             {registrationStatus === "error" && (
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>{errorMessage}</AlertDescription>
+              <Alert variant="destructive" className="bg-red-900/30 border-red-500/30 backdrop-blur-md">
+                <AlertTriangle className="h-4 w-4 text-red-400" />
+                <AlertDescription className="text-red-200">{errorMessage}</AlertDescription>
               </Alert>
             )}
           </>
         )}
       </CardContent>
-      <CardFooter className="flex justify-between">
+      
+      <CardFooter className="flex justify-between relative z-10">
         <Button 
-          variant="outline" 
+          variant="outline"
           onClick={onReset}
           disabled={registrationStatus === "processing"}
+          className="border-cyber-purple/30 text-gray-300 hover:bg-cyber-purple/10"
         >
           Cancel
         </Button>
         <Button 
-          className="bg-terminal-purple hover:bg-terminal-deep-purple text-white"
+          className="bg-gradient-to-r from-cyber-purple to-cyber-neon text-white shadow-neon hover:shadow-cyber transition-all duration-300"
           disabled={
             !isConnected || 
             !isCorrectNetwork || 
