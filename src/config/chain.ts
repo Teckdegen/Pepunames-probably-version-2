@@ -10,13 +10,23 @@ export const pepeUnchained = {
     decimals: 18,
   },
   rpcUrls: {
-    default: { http: ['https://3409.rpc.thirdweb.com'] },
-    public: { http: ['https://3409.rpc.thirdweb.com'] },
+    default: { 
+      http: [
+        'https://rpc-pepe-unchained-test-ypyaeq1krb.t.conduit.xyz',
+        'https://3409.rpc.thirdweb.com'
+      ] 
+    },
+    public: { 
+      http: [
+        'https://rpc-pepe-unchained-test-ypyaeq1krb.t.conduit.xyz',
+        'https://3409.rpc.thirdweb.com'
+      ] 
+    },
   },
   blockExplorers: {
     default: {
       name: 'PEPU Explorer',
-      url: 'https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz/',
+      url: 'https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz',
     },
   },
   // Using PEPU logo or a default one if not available
