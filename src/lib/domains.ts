@@ -14,11 +14,7 @@ export function validateDomainName(name: string): { valid: boolean; message?: st
     return { valid: false, message: 'Only letters, numbers, and hyphens are allowed' };
   }
 
-  // Check length
-  if (name.length < 3) {
-    return { valid: false, message: 'Domain name must be at least 3 characters' };
-  }
-
+  // Check length - now allowing single character domains
   if (name.length > 32) {
     return { valid: false, message: 'Domain name must be less than 32 characters' };
   }
