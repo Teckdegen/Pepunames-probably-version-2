@@ -92,7 +92,8 @@ export async function monitorTransaction(provider: any, txHash: string) {
 // Verify payment received in treasury wallet with enhanced validation
 export async function verifyPayment(txHash: string | `0x${string}`, provider: any): Promise<boolean> {
   try {
-    const hashString = typeof txHash === 'string' ? txHash : txHash.toString();
+    // Ensure we have a string regardless of what type was passed
+    const hashString: string = typeof txHash === 'string' ? txHash : txHash as string;
     
     if (!hashString || hashString.length !== 66 || !hashString.startsWith('0x')) {
       throw new Error("Invalid transaction hash format");
@@ -135,7 +136,8 @@ export async function completeDomainRegistration(
   provider: any
 ) {
   try {
-    const hashString = typeof txHash === 'string' ? txHash : txHash.toString();
+    // Ensure we have a string regardless of what type was passed
+    const hashString: string = typeof txHash === 'string' ? txHash : txHash as string;
     
     // Verify payment first
     const isPaymentVerified = await verifyPayment(hashString, provider);
