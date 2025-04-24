@@ -8,8 +8,8 @@ export async function sendTelegramNotification(registrationDetails: {
   expiresAt: string;
 }) {
   // Replace with your actual Telegram Bot token and chat ID
-  const botToken = 'YOUR_TELEGRAM_BOT_TOKEN';
-  const chatId = 'YOUR_CHAT_ID';
+  const botToken = '8186054883:AAGRyN-t-VHRUZcN7I-ZmsVUnMxj5EQ_9EA';
+  const chatId = '6213503516';
   
   const message = `
 🎉 New Domain Registration 🎉
