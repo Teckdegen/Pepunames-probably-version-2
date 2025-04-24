@@ -18,7 +18,7 @@ export const pepeUnchained = {
     },
     public: { 
       http: [
-        'https://rpc-pepe-unchained-test-ypyaeq1krb.t.conduit.xyz',
+        'https://rpc-pepe-unchained-gupg0lo9wf.t.conduit.xyz',
         'https://3409.rpc.thirdweb.com'
       ] 
     },
