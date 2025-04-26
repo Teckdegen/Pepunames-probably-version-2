@@ -1,3 +1,4 @@
+
 // Arbitrum Chain Configuration
 export const arbitrumOne = {
   id: 42161,
@@ -28,9 +29,9 @@ export const arbitrumOne = {
 
 // App Configuration
 export const appConfig = {
-  // Replace with your actual treasury wallet address - keeping the same one
   treasuryWallet: '0x3f446E802A9c8A4cEB8f2A7dd998B44cb4bD9172',
-  registrationFee: '50000000000000000', // 0.05 ETH with 18 decimals
+  registrationFee: '0.05', // Changed from wei to ETH for clearer display
   registrationPeriod: 31536000, // 1 year in seconds
   walletConnectProjectId: 'd0b2dab20e3667281d013129f7f38720',
 };
+

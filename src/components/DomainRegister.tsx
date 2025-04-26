@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader, CheckCheck, AlertTriangle, Send } from "lucide-react";
-import { useAccount, useBalance, useSwitchChain, useChainId, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useBalance, useChainId, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { formatEther, parseEther } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { arbitrumOne, appConfig } from "@/config/chain";
@@ -23,51 +22,40 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
   const { switchChain, isPending: isSwitchingChain } = useSwitchChain();
   const { toast } = useToast();
   
-  // State for transaction flow
   const [registrationStatus, setRegistrationStatus] = useState<
     "idle" | "sending" | "processing" | "success" | "error"
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined);
   
-  // Get user balance
   const { data: balance } = useBalance({
     address,
   });
   
-  // Transaction hooks
   const { sendTransaction, isPending: isSendingTx } = useSendTransaction();
   const { isLoading: isWaitingTx, isSuccess: txConfirmed } = useWaitForTransactionReceipt({
     hash: txHash,
   });
   
-  // Calculate if user has enough balance
-  const registrationFeeInEth = parseFloat(formatEther(BigInt(appConfig.registrationFee)));
+  const registrationFeeInWei = parseEther(appConfig.registrationFee);
   const hasEnoughBalance = balance && 
-    parseFloat(balance.formatted) >= registrationFeeInEth;
+    balance.value >= registrationFeeInWei;
   
   const isCorrectNetwork = chainId === arbitrumOne.id;
 
-  // Handle network switching
   const handleSwitchNetwork = async () => {
     try {
       if (typeof window !== "undefined" && window.ethereum) {
         await window.ethereum.request({
           method: "wallet_addEthereumChain",
           params: [{
-            chainId: "0xA4B1",  // Hexadecimal for 42161
-            chainName: "Arbitrum One",
-            nativeCurrency: {
-              name: "Ether",
-              symbol: "ETH",
-              decimals: 18
-            },
-            rpcUrls: ["https://arb1.arbitrum.io/rpc"],
-            blockExplorerUrls: ["https://arbiscan.io"],
+            chainId: "0xA4B1",
+            chainName: arbitrumOne.name,
+            nativeCurrency: arbitrumOne.nativeCurrency,
+            rpcUrls: [arbitrumOne.rpcUrls.default.http[0]],
+            blockExplorerUrls: [arbitrumOne.blockExplorers.default.url],
           }]
         });
-      } else if (switchChain) {
-        switchChain({ chainId: arbitrumOne.id });
       }
     } catch (error: any) {
       console.error("Failed to add/switch to Arbitrum network:", error);
@@ -79,7 +67,6 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
     }
   };
 
-  // Handle domain registration
   const handleRegister = async () => {
     if (!address || !isConnected || !isCorrectNetwork || !hasEnoughBalance) return;
     
@@ -87,14 +74,12 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
       setRegistrationStatus("sending");
       setErrorMessage("");
       
-      // Send actual transaction to treasury wallet
       sendTransaction({
         to: appConfig.treasuryWallet,
-        value: BigInt(appConfig.registrationFee),
+        value: registrationFeeInWei,
       }, {
         onSuccess: (data) => {
-          // Store transaction hash
-          setTxHash(data); // Directly use the hash returned by sendTransaction
+          setTxHash(data);
           setRegistrationStatus("processing");
           toast({
             title: "Transaction Sent",
@@ -125,17 +110,15 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
     }
   };
   
-  // Process domain registration after transaction confirms
   const processRegistration = async () => {
     if (!txHash || !address) return;
     
     try {
-      // Complete domain registration process
       const provider = window.ethereum;
       await completeDomainRegistration(
         selectedDomain.replace('.pepu', ''),
         address,
-        txHash, // Pass the transaction hash string
+        txHash,
         provider
       );
       
@@ -159,7 +142,6 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
     }
   };
   
-  // Watch for transaction confirmation and process registration
   if (txConfirmed && registrationStatus === "processing") {
     processRegistration();
   }
@@ -177,7 +159,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
           <span className="font-mono">{selectedDomain}</span>
         </CardTitle>
         <CardDescription className="text-gray-300">
-          Secure your .pepu domain for {registrationFeeInEth} ETH on Arbitrum
+          Secure your .pepu domain for {appConfig.registrationFee} ETH on Arbitrum
         </CardDescription>
       </CardHeader>
       
@@ -195,22 +177,14 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
               <Alert className="bg-amber-900/30 border-amber-500/30 backdrop-blur-md">
                 <AlertTriangle className="h-4 w-4 text-amber-400" />
                 <AlertDescription className="flex items-center justify-between text-amber-200">
-                  <span>Switch to Arbitrum One (Chain ID: 42161)</span>
+                  <span>Add & Switch to Arbitrum One</span>
                   <Button 
                     variant="outline"
                     size="sm"
                     onClick={handleSwitchNetwork}
-                    disabled={isSwitchingChain}
                     className="ml-2 text-xs h-7 px-2 border-amber-500/50 text-amber-300 hover:bg-amber-500/20"
                   >
-                    {isSwitchingChain ? (
-                      <>
-                        <Loader className="mr-1 h-3 w-3 animate-spin" />
-                        Switching...
-                      </>
-                    ) : (
-                      "Add & Switch"
-                    )}
+                    Switch Network
                   </Button>
                 </AlertDescription>
               </Alert>
@@ -220,7 +194,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
               <Alert variant="destructive" className="bg-red-900/30 border-red-500/30 backdrop-blur-md">
                 <AlertTriangle className="h-4 w-4 text-red-400" />
                 <AlertDescription className="text-red-200">
-                  Insufficient ETH balance. You need at least {registrationFeeInEth} ETH.
+                  Insufficient ETH balance. You need at least {appConfig.registrationFee} ETH.
                 </AlertDescription>
               </Alert>
             )}
@@ -233,7 +207,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Price:</span>
-                  <span className="font-mono text-cyber-pink">{registrationFeeInEth} ETH</span>
+                  <span className="font-mono text-cyber-pink">{appConfig.registrationFee} ETH</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Network:</span>
