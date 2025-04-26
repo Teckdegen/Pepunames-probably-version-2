@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -63,7 +64,7 @@ export default function SearchPage() {
             <div className="bg-terminal-dark-purple p-6">
               <pre className="font-mono text-green-400 text-sm mb-4 animate-fade-in">
                 {`> PEPU Domain Registry v1.0
-> Connected to Pepu Unchained Network
+> Connected to Arbitrum One Network
 > Ready to register domains...`}
               </pre>
               
@@ -115,12 +116,12 @@ export default function SearchPage() {
             <h2 className="text-xl font-semibold mb-4 text-gradient">About Pepu Domains</h2>
             <div className="prose dark:prose-invert max-w-none">
               <p>
-                Register your .pepu domain for just 5,000 PEPU tokens for the first year 
+                Register your .pepu domain for just 0.05 ETH on Arbitrum One for the first year 
                 during our early access phase. Be part of the first 1,000 registrants to 
                 secure this special launch price!
               </p>
               <p>
-                Each domain is stored securely on the PEPU blockchain, ensuring your 
+                Each domain is stored securely on the blockchain, ensuring your 
                 digital identity remains protected and verifiable.
               </p>
             </div>
@@ -157,7 +158,7 @@ export default function SearchPage() {
                 </svg>
               </div>
               <h3 className="text-lg font-medium mb-2">Launch Discount</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm">50% off for first 1,000 domains during our early access phase.</p>
+              <p className="text-gray-600 dark:text-gray-300 text-sm">Special pricing of 0.05 ETH for first 1,000 domains during our early access phase.</p>
             </div>
           </motion.div>
         </div>

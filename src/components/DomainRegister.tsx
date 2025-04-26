@@ -7,7 +7,7 @@ import { Loader, CheckCheck, AlertTriangle, Send } from "lucide-react";
 import { useAccount, useBalance, useSwitchChain, useChainId, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { formatEther, parseEther } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { pepeUnchained, appConfig } from "@/config/chain";
+import { arbitrumOne, appConfig } from "@/config/chain";
 import { completeDomainRegistration } from "@/lib/domains";
 import { useToast } from "@/hooks/use-toast";
 
@@ -39,15 +39,14 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
   const { sendTransaction, isPending: isSendingTx } = useSendTransaction();
   const { isLoading: isWaitingTx, isSuccess: txConfirmed } = useWaitForTransactionReceipt({
     hash: txHash,
-    // Remove the 'enabled' property as it's not available in this hook's options
   });
   
   // Calculate if user has enough balance
-  const registrationFeeInPepu = parseFloat(formatEther(BigInt(appConfig.registrationFee)));
+  const registrationFeeInEth = parseFloat(formatEther(BigInt(appConfig.registrationFee)));
   const hasEnoughBalance = balance && 
-    parseFloat(balance.formatted) >= registrationFeeInPepu;
+    parseFloat(balance.formatted) >= registrationFeeInEth;
   
-  const isCorrectNetwork = chainId === pepeUnchained.id;
+  const isCorrectNetwork = chainId === arbitrumOne.id;
 
   // Handle network switching
   const handleSwitchNetwork = async () => {
@@ -56,29 +55,26 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
         await window.ethereum.request({
           method: "wallet_addEthereumChain",
           params: [{
-            chainId: "0xD51",  // 3409 in hex
-            chainName: "PEPU Mainnet",
+            chainId: "0xA4B1",  // Hexadecimal for 42161
+            chainName: "Arbitrum One",
             nativeCurrency: {
-              name: "PEPU",
-              symbol: "PEPU",
+              name: "Ether",
+              symbol: "ETH",
               decimals: 18
             },
-            rpcUrls: [
-              "https://rpc-pepe-unchained-gupg0lo9wf.t.conduit.xyz",
-              "https://3409.rpc.thirdweb.com"
-            ],
-            blockExplorerUrls: ["https://explorer-pepe-unchained-gupg0lo9wf.t.conduit.xyz/"],
+            rpcUrls: ["https://arb1.arbitrum.io/rpc"],
+            blockExplorerUrls: ["https://arbiscan.io"],
           }]
         });
       } else if (switchChain) {
-        switchChain({ chainId: pepeUnchained.id });
+        switchChain({ chainId: arbitrumOne.id });
       }
     } catch (error: any) {
-      console.error("Failed to add/switch to PEPU network:", error);
+      console.error("Failed to add/switch to Arbitrum network:", error);
       toast({
         variant: "destructive",
         title: "Network Error",
-        description: error?.message || "Unable to switch or add PEPU Mainnet in your wallet.",
+        description: error?.message || "Unable to switch or add Arbitrum One in your wallet.",
       });
     }
   };
@@ -181,7 +177,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
           <span className="font-mono">{selectedDomain}</span>
         </CardTitle>
         <CardDescription className="text-gray-300">
-          Secure your .pepu domain for {registrationFeeInPepu} PEPU tokens
+          Secure your .pepu domain for {registrationFeeInEth} ETH on Arbitrum
         </CardDescription>
       </CardHeader>
       
@@ -199,7 +195,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
               <Alert className="bg-amber-900/30 border-amber-500/30 backdrop-blur-md">
                 <AlertTriangle className="h-4 w-4 text-amber-400" />
                 <AlertDescription className="flex items-center justify-between text-amber-200">
-                  <span>Switch to PEPU Mainnet (Chain ID: 3409)</span>
+                  <span>Switch to Arbitrum One (Chain ID: 42161)</span>
                   <Button 
                     variant="outline"
                     size="sm"
@@ -224,7 +220,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
               <Alert variant="destructive" className="bg-red-900/30 border-red-500/30 backdrop-blur-md">
                 <AlertTriangle className="h-4 w-4 text-red-400" />
                 <AlertDescription className="text-red-200">
-                  Insufficient PEPU balance. You need at least {registrationFeeInPepu} PEPU.
+                  Insufficient ETH balance. You need at least {registrationFeeInEth} ETH.
                 </AlertDescription>
               </Alert>
             )}
@@ -237,7 +233,11 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Price:</span>
-                  <span className="font-mono text-cyber-pink">{registrationFeeInPepu} PEPU</span>
+                  <span className="font-mono text-cyber-pink">{registrationFeeInEth} ETH</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400">Network:</span>
+                  <span className="font-mono text-cyber-yellow">Arbitrum One</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Duration:</span>

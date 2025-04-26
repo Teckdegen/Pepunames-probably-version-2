@@ -114,7 +114,7 @@ export async function verifyPayment(txHash: string | `0x${string}`, provider: an
     const treasuryWallet = appConfig.treasuryWallet.toLowerCase();
 
     if (receivedAmount < expectedAmount) {
-      throw new Error(`Insufficient payment: received ${ethers.utils.formatEther(receivedAmount)} PEPU, expected ${ethers.utils.formatEther(expectedAmount)} PEPU`);
+      throw new Error(`Insufficient payment: received ${ethers.utils.formatEther(receivedAmount)} ETH, expected ${ethers.utils.formatEther(expectedAmount)} ETH`);
     }
     
     if (recipient !== treasuryWallet) {
