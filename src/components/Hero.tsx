@@ -49,7 +49,7 @@ export function Hero() {
               </div>
               <div className="flex items-center justify-center gap-2">
                 <span className="text-gray-600">for only</span>
-                <span className="text-[#7c3aed] font-bold text-xl">5,000 PEPU</span>
+                <span className="text-[#7c3aed] font-bold text-xl">0.005 eth</span>
                 <span className="text-gray-600">tokens</span>
               </div>
               <div className="mt-2 text-sm text-gray-500 flex items-center justify-center gap-2">
