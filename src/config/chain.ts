@@ -30,7 +30,7 @@ export const arbitrumOne = {
 // App Configuration
 export const appConfig = {
   treasuryWallet: '0x3f446E802A9c8A4cEB8f2A7dd998B44cb4bD9172',
-  registrationFee: '0.05', // Changed from wei to ETH for clearer display
+  registrationFee: '0.005', // Changed from wei to ETH for clearer display
   registrationPeriod: 31536000, // 1 year in seconds
   walletConnectProjectId: 'd0b2dab20e3667281d013129f7f38720',
 };
