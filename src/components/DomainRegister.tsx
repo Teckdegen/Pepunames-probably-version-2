@@ -50,7 +50,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
         await window.ethereum.request({
           method: "wallet_addEthereumChain",
           params: [{
-            chainId: "0xA4B1",
+            chainId: "0x17e0d",
             chainName: arbitrumOne.name,
             nativeCurrency: arbitrumOne.nativeCurrency,
             rpcUrls: [arbitrumOne.rpcUrls.default.http[0]],
@@ -59,11 +59,11 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
         });
       }
     } catch (error: any) {
-      console.error("Failed to add/switch to Arbitrum network:", error);
+      console.error("Failed to add/switch to 	Pepe Unchained V2 network:", error);
       toast({
         variant: "destructive",
         title: "Network Error",
-        description: error?.message || "Unable to switch or add Arbitrum One in your wallet.",
+        description: error?.message || "Unable to switch or add 	Pepe Unchained V2 in your wallet.",
       });
     }
   };
@@ -160,7 +160,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
           <span className="font-mono">{selectedDomain}</span>
         </CardTitle>
         <CardDescription className="text-gray-300">
-          Secure your .pepu domain for {appConfig.registrationFee} ETH on Arbitrum
+          Secure your .pepu domain for {appConfig.registrationFee} PEPU USDC
         </CardDescription>
       </CardHeader>
       
@@ -178,7 +178,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
               <Alert className="bg-amber-900/30 border-amber-500/30 backdrop-blur-md">
                 <AlertTriangle className="h-4 w-4 text-amber-400" />
                 <AlertDescription className="flex items-center justify-between text-amber-200">
-                  <span>Add & Switch to Arbitrum One</span>
+                  <span>Add & Switch to 	Pepe Unchained V2</span>
                   <Button 
                     variant="outline"
                     size="sm"
@@ -195,7 +195,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
               <Alert variant="destructive" className="bg-red-900/30 border-red-500/30 backdrop-blur-md">
                 <AlertTriangle className="h-4 w-4 text-red-400" />
                 <AlertDescription className="text-red-200">
-                  Insufficient ETH balance. You need at least {appConfig.registrationFee} ETH.
+                  Insufficient USDC balance. You need at least {appConfig.registrationFee} USDC.
                 </AlertDescription>
               </Alert>
             )}
@@ -212,7 +212,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Network:</span>
-                  <span className="font-mono text-cyber-yellow">Arbitrum One</span>
+                  <span className="font-mono text-cyber-yellow">	Pepe Unchained V2</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Duration:</span>
