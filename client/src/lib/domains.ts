@@ -1,5 +1,5 @@
 
-import { checkDomainAvailability, registerDomain } from './supabase';
+import { checkDomainAvailability as apiCheckDomain, confirmDomainRegistration, logTransaction } from './api';
 import { appConfig } from '@/config/chain';
 import { sendTelegramNotification } from './telegram';
 import { ethers } from 'ethers';
@@ -38,7 +38,7 @@ export async function checkDomain(name: string) {
   }
   
   const formattedName = formatDomainName(name);
-  return checkDomainAvailability(formattedName);
+  return apiCheckDomain(formattedName);
 }
 
 // Monitor transaction status with more robust error handling
@@ -114,7 +114,7 @@ export async function verifyPayment(txHash: string | `0x${string}`, provider: an
     const treasuryWallet = appConfig.treasuryWallet.toLowerCase();
 
     if (receivedAmount < expectedAmount) {
-      throw new Error(`Insufficient payment: received ${ethers.utils.formatEther(receivedAmount)} ETH, expected ${ethers.utils.formatEther(expectedAmount)} ETH`);
+      throw new Error(`Insufficient payment: received ${ethers.formatEther(receivedAmount)} ETH, expected ${ethers.formatEther(expectedAmount)} ETH`);
     }
     
     if (recipient !== treasuryWallet) {
@@ -147,7 +147,21 @@ export async function completeDomainRegistration(
     
     // Register the domain
     const formattedDomain = formatDomainName(domainName);
-    const registrationData = await registerDomain(formattedDomain, walletAddress, hashString);
+    const registrationData = await confirmDomainRegistration({
+      domainName: formattedDomain,
+      walletAddress: walletAddress,
+      txHash: hashString,
+      paymentAmount: appConfig.registrationFee
+    });
+    
+    // Log the transaction
+    await logTransaction({
+      domainName: formattedDomain,
+      walletAddress: walletAddress,
+      txHash: hashString,
+      amount: appConfig.registrationFee,
+      status: 'confirmed'
+    });
     
     // Only send Telegram notification after successful registration
     if (registrationData) {
@@ -155,8 +169,8 @@ export async function completeDomainRegistration(
         domainName: formattedDomain,
         walletAddress: walletAddress,
         txHash: hashString,
-        reservedAt: registrationData.created_at,
-        expiresAt: registrationData.expires_at,
+        reservedAt: registrationData.createdAt,
+        expiresAt: registrationData.expiresAt,
       };
       
       try {
