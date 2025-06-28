@@ -61,6 +61,9 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        "terminal-purple": "#9b87f5",
+        "terminal-dark-purple": "#1a0b2e",
+        "terminal-deep-purple": "#2d1b69",
       },
       keyframes: {
         "accordion-down": {
@@ -79,10 +82,15 @@ export default {
             height: "0",
           },
         },
+        "terminal-cursor": {
+          "0%, 50%": { opacity: "1" },
+          "51%, 100%": { opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "terminal-cursor": "terminal-cursor 1s infinite",
       },
     },
   },
