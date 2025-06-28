@@ -1,9 +1,9 @@
 
 // Arbitrum Chain Configuration
 export const arbitrumOne = {
-  id: 42161,
-  name: 'Arbitrum One',
-  network: 'arbitrum',
+  id: 	97741,
+  name: '	Pepe Unchained V2',
+  network: '	PEPU',
   nativeCurrency: {
     name: 'Ether',
     symbol: 'ETH',
