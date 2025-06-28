@@ -25,15 +25,15 @@ export function Navbar() {
         await window.ethereum.request({
           method: "wallet_addEthereumChain",
           params: [{
-            chainId: "0xA4B1",  // Hexadecimal for 42161
-            chainName: "Arbitrum One",
+            chainId: "0x17e0d",  // Hexadecimal for 42161
+            chainName: "	Pepe Unchained V2",
             nativeCurrency: {
               name: "Ether",
               symbol: "ETH",
               decimals: 18
             },
-            rpcUrls: ["https://arb1.arbitrum.io/rpc"],
-            blockExplorerUrls: ["https://arbiscan.io"],
+            rpcUrls: ["https://rpc-pepu-v2-mainnet-0.t.conduit.xyz"],
+            blockExplorerUrls: ["https://explorer-pepu-v2-mainnet-0.t.conduit.xyz"],
           }]
         });
       } else if (switchChain) {
@@ -42,14 +42,14 @@ export function Navbar() {
       
       toast({
         title: "Network Changed",
-        description: "Successfully connected to Arbitrum One",
+        description: "Successfully connected to 	Pepe Unchained V2",
       });
     } catch (error: any) {
       console.error("Failed to switch network:", error);
       toast({
         variant: "destructive",
         title: "Network Error",
-        description: error?.message || "Unable to switch to Arbitrum One",
+        description: error?.message || "Unable to switch to 	Pepe Unchained V2",
       });
     }
   };
