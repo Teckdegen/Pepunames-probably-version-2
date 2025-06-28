@@ -7,7 +7,7 @@ import {
 } from '@rainbow-me/rainbowkit';
 import { createConfig, WagmiConfig } from 'wagmi';
 import { http } from 'wagmi';
-import { arbitrumOne, appConfig } from '@/config/chain';
+import { pepuChain, appConfig } from '@/config/chain';
 import { ReactNode } from 'react';
 
 // Set up connectors using getDefaultWallets (simpler approach)
@@ -19,9 +19,9 @@ const { connectors } = getDefaultWallets({
 // Create the wagmi config for v2
 const wagmiConfig = createConfig({
   connectors,
-  chains: [arbitrumOne],
+  chains: [pepuChain],
   transports: {
-    [arbitrumOne.id]: http(),
+    [pepuChain.id]: http(),
   },
 });
 

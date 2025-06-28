@@ -1,0 +1,137 @@
+Here’s a **comprehensive system prompt** that explains to the AI agent **how payment and verification will work using USDC**, the **role of the contract**, and instructs the agent to **fully switch from Arbitrum One to Pepe Unchained V2** using your custom configuration.
+
+---
+
+## 🔐 SYSTEM PROMPT – Payment, Verification, and Chain Configuration
+
+🎯 **Objective**:
+Implement a secure, verifiable domain registration flow using **10 USDC (ERC-20)** payments on the **Pepe Unchained V2** blockchain.
+
+---
+
+### 💳 PAYMENT FLOW (USDC on PEPU Chain)
+
+When a user wants to register a `.pepu` domain, the system must:
+
+1. **Verify domain availability** using Supabase
+
+2. **Initiate a token transfer**:
+
+   * Amount: `10 USDC`
+   * Token: `USDC` (ERC-20)
+   * Network: `Pepe Unchained V2` (Chain ID: `97741`)
+   * Treasury Address: `0x3af0382fF31F4C5965a48E5B42092Be03C8e6e9B`
+   * Contract: `0xC565AE272c15D1aCaFc25C3A92a56D33Fa280f01`
+
+3. **Wait for transaction confirmation**
+
+4. **On success**, store registration data in Supabase:
+
+   * domain\_name (e.g., `babyv.pepu`)
+   * wallet\_address
+   * tx\_hash
+   * reserved\_at (timestamp)
+   * expires\_at (+1 year)
+
+5. **Show confirmation to the user** with Etherscan link
+
+6. Optionally, **send a Telegram alert** with domain + wallet + tx
+
+---
+
+### 🧩 USDC CONTRACT ROLE
+
+USDC is an **ERC-20 token contract** deployed on the **Pepe Unchained chain**, acting as the payment mechanism.
+
+The AI agent must:
+
+* Import the **USDC ABI** (standard ERC-20 ABI)
+* Create an `ethers.Contract` instance using:
+
+  ```ts
+  const usdc = new ethers.Contract(
+    '0xC565AE272c15D1aCaFc25C3A92a56D33Fa280f01',
+    usdcAbi,
+    signer
+  );
+  ```
+* Call the `transfer()` method to send 10 USDC to:
+
+  ```
+  0x3af0382fF31F4C5965a48E5B42092Be03C8e6e9B
+  ```
+* Wait for `tx.wait()` to confirm
+
+If transaction fails:
+
+* Show user error
+* Do **not** insert anything into Supabase
+
+---
+
+### ✅ WALLET CONNECTION REQUIREMENTS
+
+Use **RainbowKit + Wagmi**, but only enable:
+
+* MetaMask
+* Coinbase Wallet
+
+All wallet actions must happen on the **Pepe Unchained V2** network:
+
+```js
+export const pepuChain = {
+  id: 97741,
+  name: 'Pepe Unchained V2',
+  network: 'pepu',
+  nativeCurrency: {
+    name: 'PEPU',
+    symbol: 'PEPU',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ['https://arb1.arbitrum.io/rpc'] },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Arbiscan',
+      url: 'https://arbiscan.io',
+    },
+  },
+  iconUrl: 'https://raw.githubusercontent.com/base-org/brand-kit/001c0e9b40a67799ebe0418671ac4e02a0c683ce/logo/in-use/icon/base-logo.svg',
+  iconBackground: '#000000',
+};
+```
+
+**Important**: The AI agent must **remove all references to Arbitrum One** and instead **replace with Pepe Unchained V2** configuration above.
+
+---
+
+### 🧪 VERIFICATION PROCESS SUMMARY
+
+| Step                     | Description                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------ |
+| Wallet Connect           | Via RainbowKit → MetaMask / Coinbase only                                      |
+| Domain Availability      | Check Supabase (domains table)                                                 |
+| USDC Transfer            | Send 10 USDC to treasury via `transfer()`                                      |
+| Wait for tx confirmation | `await tx.wait()`                                                              |
+| Save to DB               | Insert `domain_name`, `wallet_address`, `tx_hash`, `reserved_at`, `expires_at` |
+| Show Confirmation        | Show user success + tx link on Arbiscan                                        |
+
+---
+
+### 🛠️ IMPLEMENTATION TIPS
+
+* Use `ethers.utils.parseUnits('10', 6)` to format USDC (6 decimals)
+* Disable Register button while tx is pending
+* Ensure you're on chain ID `97741` before sending tx
+* Mask user addresses (e.g., `0xAb...C3`) on frontend
+* Track and show total domain count with Supabase query
+
+---
+
+Let me know if you’d like full code snippets to handle:
+
+* `ethers.Contract` for USDC
+* `RainbowKit + Wagmi` config for Pepe Unchained V2
+* `Supabase insert` logic
+* `Domain availability check` before payment

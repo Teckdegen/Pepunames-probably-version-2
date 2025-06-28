@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, Wallet, Check, ExternalLink } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAccount, useDisconnect, useSwitchChain, useChainId } from 'wagmi';
-import { arbitrumOne } from "@/config/chain";
+import { pepuChain } from "@/config/chain";
 import { useToast } from "@/hooks/use-toast";
 
 export function Navbar() {
@@ -16,8 +16,8 @@ export function Navbar() {
   const chainId = useChainId();
   const { toast } = useToast();
   
-  // Check if user is on Arbitrum network
-  const isOnArbitrumNetwork = chainId === arbitrumOne.id;
+  // Check if user is on Pepu network
+  const isOnPepuNetwork = chainId === pepuChain.id;
   
   const handleSwitchNetwork = async () => {
     try {
@@ -25,31 +25,27 @@ export function Navbar() {
         await window.ethereum.request({
           method: "wallet_addEthereumChain",
           params: [{
-            chainId: "0x17e0d",  // Hexadecimal for 42161
-            chainName: "	Pepe Unchained V2",
-            nativeCurrency: {
-              name: "Ether",
-              symbol: "ETH",
-              decimals: 18
-            },
-            rpcUrls: ["https://rpc-pepu-v2-mainnet-0.t.conduit.xyz"],
-            blockExplorerUrls: ["https://explorer-pepu-v2-mainnet-0.t.conduit.xyz"],
+            chainId: `0x${pepuChain.id.toString(16)}`,
+            chainName: pepuChain.name,
+            nativeCurrency: pepuChain.nativeCurrency,
+            rpcUrls: [pepuChain.rpcUrls.default.http[0]],
+            blockExplorerUrls: [pepuChain.blockExplorers.default.url],
           }]
         });
       } else if (switchChain) {
-        await switchChain({ chainId: arbitrumOne.id });
+        await switchChain({ chainId: pepuChain.id });
       }
       
       toast({
         title: "Network Changed",
-        description: "Successfully connected to 	Pepe Unchained V2",
+        description: "Successfully connected to Pepe Unchained V2",
       });
     } catch (error: any) {
       console.error("Failed to switch network:", error);
       toast({
         variant: "destructive",
         title: "Network Error",
-        description: error?.message || "Unable to switch to 	Pepe Unchained V2",
+        description: error?.message || "Unable to switch to     Pepe Unchained V2",
       });
     }
   };
@@ -92,7 +88,7 @@ export function Navbar() {
             <div className="flex items-center gap-4">
               {isConnected && (
                 <>
-                  {!isOnArbitrumNetwork ? (
+                  {!isOnPepuNetwork ? (
                     <Button 
                       variant="outline"
                       size="sm"
@@ -100,7 +96,7 @@ export function Navbar() {
                       className="bg-amber-500 text-white hover:bg-amber-600 border-amber-400 shadow-md transition-all duration-300"
                     >
                       <Wallet className="mr-2 h-4 w-4" />
-                      Switch to Arbitrum
+                      Switch to Pepu V2
                     </Button>
                   ) : (
                     <Button 
@@ -109,7 +105,7 @@ export function Navbar() {
                       className="bg-green-500 text-white border-green-400 shadow-md cursor-default"
                     >
                       <Check className="mr-2 h-4 w-4" />
-                      On Arbitrum Network
+                      On Pepu Network
                     </Button>
                   )}
                   <Button 
@@ -170,7 +166,7 @@ export function Navbar() {
           <div className="px-4 space-y-2">
             {isConnected && (
               <>
-                {!isOnArbitrumNetwork ? (
+                {!isOnPepuNetwork ? (
                   <Button 
                     variant="outline"
                     size="sm"
@@ -178,7 +174,7 @@ export function Navbar() {
                     className="w-full bg-amber-500 text-white hover:bg-amber-600 border-amber-400 shadow-md transition-all duration-300"
                   >
                     <Wallet className="mr-2 h-4 w-4" />
-                    Switch to Arbitrum
+                    Switch to Pepu V2
                   </Button>
                 ) : (
                   <Button 
@@ -187,7 +183,7 @@ export function Navbar() {
                     className="w-full bg-green-500 text-white border-green-400 shadow-md cursor-default"
                   >
                     <Check className="mr-2 h-4 w-4" />
-                    On Arbitrum Network
+                    On Pepu Network
                   </Button>
                 )}
                 <Button 

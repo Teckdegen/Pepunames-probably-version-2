@@ -1,15 +1,17 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader, CheckCheck, AlertTriangle, Send } from "lucide-react";
-import { useAccount, useBalance, useChainId, useSendTransaction, useWaitForTransactionReceipt, useSwitchChain } from "wagmi";
-import { formatEther, parseEther } from "viem";
+import { useAccount, useChainId, useWaitForTransactionReceipt, useSwitchChain } from "wagmi";
+import { parseUnits, formatUnits } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { arbitrumOne, appConfig } from "@/config/chain";
+import { pepuChain, appConfig, usdcConfig } from "@/config/chain";
 import { completeDomainRegistration } from "@/lib/domains";
 import { useToast } from "@/hooks/use-toast";
+import { usdcAbi } from "@/contracts/usdc";
+import { ethers } from "ethers";
 
 interface DomainRegisterProps {
   selectedDomain: string;
@@ -28,21 +30,37 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>(undefined);
+  const [usdcBalance, setUsdcBalance] = useState<string>("0");
   
-  const { data: balance } = useBalance({
-    address,
-  });
-  
-  const { sendTransaction, isPending: isSendingTx } = useSendTransaction();
   const { isLoading: isWaitingTx, isSuccess: txConfirmed } = useWaitForTransactionReceipt({
     hash: txHash,
   });
   
-  const registrationFeeInWei = parseEther(appConfig.registrationFee);
-  const hasEnoughBalance = balance && 
-    balance.value >= registrationFeeInWei;
+  const registrationFeeInUSDC = parseUnits(appConfig.registrationFee, usdcConfig.decimals);
+  const hasEnoughBalance = parseUnits(usdcBalance, usdcConfig.decimals) >= registrationFeeInUSDC;
   
-  const isCorrectNetwork = chainId === arbitrumOne.id;
+  const isCorrectNetwork = chainId === pepuChain.id;
+
+  // Check USDC balance
+  const checkUSDCBalance = useCallback(async () => {
+    if (!address || !window.ethereum) return;
+    
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const usdcContract = new ethers.Contract(usdcConfig.address, usdcAbi, provider);
+      const balance = await usdcContract.balanceOf(address);
+      const formattedBalance = formatUnits(balance, usdcConfig.decimals);
+      setUsdcBalance(formattedBalance);
+    } catch (error) {
+      console.error("Failed to check USDC balance:", error);
+      setUsdcBalance("0");
+    }
+  }, [address]);
+
+  // Check balance when address or network changes
+  if (address && isCorrectNetwork) {
+    checkUSDCBalance();
+  }
 
   const handleSwitchNetwork = async () => {
     try {
@@ -50,20 +68,20 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
         await window.ethereum.request({
           method: "wallet_addEthereumChain",
           params: [{
-            chainId: "0x17e0d",
-            chainName: arbitrumOne.name,
-            nativeCurrency: arbitrumOne.nativeCurrency,
-            rpcUrls: [arbitrumOne.rpcUrls.default.http[0]],
-            blockExplorerUrls: [arbitrumOne.blockExplorers.default.url],
+            chainId: `0x${pepuChain.id.toString(16)}`,
+            chainName: pepuChain.name,
+            nativeCurrency: pepuChain.nativeCurrency,
+            rpcUrls: [pepuChain.rpcUrls.default.http[0]],
+            blockExplorerUrls: [pepuChain.blockExplorers.default.url],
           }]
         });
       }
     } catch (error: any) {
-      console.error("Failed to add/switch to 	Pepe Unchained V2 network:", error);
+      console.error("Failed to add/switch to Pepe Unchained V2 network:", error);
       toast({
         variant: "destructive",
         title: "Network Error",
-        description: error?.message || "Unable to switch or add 	Pepe Unchained V2 in your wallet.",
+        description: error?.message || "Unable to switch or add Pepe Unchained V2 in your wallet.",
       });
     }
   };
@@ -75,29 +93,30 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
       setRegistrationStatus("sending");
       setErrorMessage("");
       
-      sendTransaction({
-        to: appConfig.treasuryWallet,
-        value: registrationFeeInWei,
-      }, {
-        onSuccess: (data) => {
-          setTxHash(data);
-          setRegistrationStatus("processing");
-          toast({
-            title: "Transaction Sent",
-            description: "Your payment is being processed...",
-          });
-        },
-        onError: (error) => {
-          console.error("Transaction error:", error);
-          setRegistrationStatus("error");
-          setErrorMessage(error.message || "Failed to send transaction");
-          toast({
-            variant: "destructive",
-            title: "Transaction Failed",
-            description: error.message || "Failed to send transaction",
-          });
-        }
+      // Get the ethereum provider and signer
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      
+      // Create USDC contract instance
+      const usdcContract = new ethers.Contract(usdcConfig.address, usdcAbi, signer);
+      
+      // Send USDC transfer transaction
+      const tx = await usdcContract.transfer(
+        appConfig.treasuryWallet,
+        registrationFeeInUSDC
+      );
+      
+      setTxHash(tx.hash);
+      setRegistrationStatus("processing");
+      
+      toast({
+        title: "Transaction Sent",
+        description: "Your USDC payment is being processed...",
       });
+      
+      // Wait for transaction confirmation
+      await tx.wait();
+      
     } catch (error: any) {
       console.error("Registration error:", error);
       setRegistrationStatus("error");
@@ -160,7 +179,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
           <span className="font-mono">{selectedDomain}</span>
         </CardTitle>
         <CardDescription className="text-gray-300">
-          Secure your .pepu domain for {appConfig.registrationFee} PEPU USDC
+          Secure your .pepu domain for {appConfig.registrationFee} USDC
         </CardDescription>
       </CardHeader>
       
@@ -178,7 +197,7 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
               <Alert className="bg-amber-900/30 border-amber-500/30 backdrop-blur-md">
                 <AlertTriangle className="h-4 w-4 text-amber-400" />
                 <AlertDescription className="flex items-center justify-between text-amber-200">
-                  <span>Add & Switch to 	Pepe Unchained V2</span>
+                  <span>Switch to Pepe Unchained V2</span>
                   <Button 
                     variant="outline"
                     size="sm"
@@ -208,11 +227,15 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Price:</span>
-                  <span className="font-mono text-cyber-pink">{appConfig.registrationFee} ETH</span>
+                  <span className="font-mono text-cyber-pink">{appConfig.registrationFee} USDC</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Network:</span>
-                  <span className="font-mono text-cyber-yellow">	Pepe Unchained V2</span>
+                  <span className="font-mono text-cyber-yellow">Pepe Unchained V2</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400">Your USDC Balance:</span>
+                  <span className="font-mono text-cyber-blue">{parseFloat(usdcBalance).toFixed(2)} USDC</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Duration:</span>
