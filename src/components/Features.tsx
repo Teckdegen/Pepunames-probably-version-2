@@ -22,9 +22,9 @@ export function Features() {
               </div>
               <span className="text-terminal-purple text-2xl font-bold">
                 First 1,000 .pepu domains<br />
-                <span className="text-base font-semibold">— 50% OFF: 0.005 eth for first year</span>
+                <span className="text-base font-semibold">— 50% OFF: 10 USDC for first year</span>
               </span>
-              <span className="text-sm text-muted-foreground">• One year registration • Early adopter benefit •</span>
+              <span className="text-sm text-muted-foreground">• One year registration • Early adopter benefit • All characters  cost the same </span>
             </div>
           </div>
         </div>
