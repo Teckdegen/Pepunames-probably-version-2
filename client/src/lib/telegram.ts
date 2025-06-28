@@ -17,7 +17,8 @@ export async function sendTelegramNotification(registrationDetails: {
 Domain: ${registrationDetails.domainName}
 Owner: ${registrationDetails.walletAddress}
 Transaction: ${registrationDetails.txHash}
-Amount: 5000 PEPU
+Amount: 10 USDC
+Network: Pepe Unchained V2
 Registered: ${new Date(registrationDetails.reservedAt).toLocaleString()}
 Expires: ${new Date(registrationDetails.expiresAt).toLocaleString()}
   `;

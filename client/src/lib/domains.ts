@@ -1,6 +1,6 @@
 
 import { checkDomainAvailability as apiCheckDomain, confirmDomainRegistration, logTransaction } from './api';
-import { appConfig } from '@/config/chain';
+import { appConfig, usdcConfig } from '@/config/chain';
 import { sendTelegramNotification } from './telegram';
 import { ethers } from 'ethers';
 
@@ -89,7 +89,7 @@ export async function monitorTransaction(provider: any, txHash: string) {
   });
 }
 
-// Verify payment received in treasury wallet with enhanced validation
+// Verify USDC payment received in treasury wallet
 export async function verifyPayment(txHash: string | `0x${string}`, provider: any): Promise<boolean> {
   try {
     // Ensure we have a string regardless of what type was passed
@@ -99,31 +99,54 @@ export async function verifyPayment(txHash: string | `0x${string}`, provider: an
       throw new Error("Invalid transaction hash format");
     }
 
-    const tx = await provider.getTransaction(hashString);
-    if (!tx) {
-      throw new Error("Transaction not found");
+    // Get transaction receipt to verify success
+    const receipt = await provider.getTransactionReceipt(hashString);
+    if (!receipt) {
+      throw new Error("Transaction receipt not found");
     }
 
-    // Wait for at least 1 confirmation
-    await tx.wait(1);
+    // Check if transaction was successful
+    if (receipt.status !== 1) {
+      throw new Error("Transaction failed or was reverted");
+    }
 
-    // Verify amount and recipient with strict validation
-    const expectedAmount = BigInt(appConfig.registrationFee);
-    const receivedAmount = tx.value;
-    const recipient = tx.to?.toLowerCase();
+    // Verify the transaction was to USDC contract
+    const usdcContract = usdcConfig.address.toLowerCase();
+    if (receipt.to?.toLowerCase() !== usdcContract) {
+      throw new Error("Transaction was not sent to USDC contract");
+    }
+
+    // Parse USDC Transfer event from logs
+    const transferEventSignature = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"; // keccak256("Transfer(address,address,uint256)")
+    const transferLog = receipt.logs.find((log: any) => 
+      log.topics[0] === transferEventSignature &&
+      log.address.toLowerCase() === usdcContract
+    );
+
+    if (!transferLog) {
+      throw new Error("USDC Transfer event not found in transaction logs");
+    }
+
+    // Decode transfer event data
     const treasuryWallet = appConfig.treasuryWallet.toLowerCase();
-
-    if (receivedAmount < expectedAmount) {
-      throw new Error(`Insufficient payment: received ${ethers.formatEther(receivedAmount)} ETH, expected ${ethers.formatEther(expectedAmount)} ETH`);
-    }
+    const toAddress = '0x' + transferLog.topics[2]?.slice(26); // Remove padding from address
+    const transferAmount = BigInt(transferLog.data);
     
-    if (recipient !== treasuryWallet) {
-      throw new Error("Payment sent to incorrect wallet address");
+    // Verify recipient is treasury wallet
+    if (toAddress.toLowerCase() !== treasuryWallet) {
+      throw new Error(`Payment sent to wrong address. Expected: ${treasuryWallet}, Got: ${toAddress}`);
+    }
+
+    // Verify amount (10 USDC = 10 * 10^6 smallest units)
+    const expectedAmount = BigInt(appConfig.registrationFee) * BigInt(10 ** usdcConfig.decimals);
+    if (transferAmount < expectedAmount) {
+      const receivedUsdc = Number(transferAmount) / (10 ** usdcConfig.decimals);
+      throw new Error(`Insufficient payment: received ${receivedUsdc} USDC, expected ${appConfig.registrationFee} USDC`);
     }
 
     return true;
   } catch (error) {
-    console.error('Payment verification failed:', error);
+    console.error('USDC payment verification failed:', error);
     throw error;
   }
 }
