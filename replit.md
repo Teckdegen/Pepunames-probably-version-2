@@ -103,8 +103,32 @@ PepuNS is a decentralized domain name service (DNS) built on the PEPU network, a
 - **API Routes**: Prefixed with /api for clear separation
 
 ## Changelog
-- June 28, 2025. Initial setup
+- June 28, 2025: Initial setup
+- June 28, 2025: Complete UI redesign to modern decentralized naming service
+- June 28, 2025: Implemented USDC payment system on Pepe Unchained V2
+- June 28, 2025: Added transaction verification before database operations
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Recent Changes
+
+### Modern UI Redesign (June 28, 2025)
+- Complete visual overhaul with dark theme and glassmorphism effects
+- Modern gradient backgrounds and animated elements
+- Improved mobile responsiveness and accessibility
+- Enhanced user experience with smooth transitions
+
+### Payment System Updates (June 28, 2025)
+- Switched from ETH to USDC payments (10 USDC registration fee)
+- Integrated USDC contract (0xC565AE272c15D1aCaFc25C3A92a56D33Fa280f01)
+- Added real-time USDC balance checking
+- Implemented transaction verification before database operations
+- Added proper error handling for failed transactions
+
+### Security Improvements (June 28, 2025)
+- Only processes domain registration after successful blockchain transaction
+- Verifies transaction receipt status before database operations
+- Prevents partial registrations from failed payments
+- No Telegram notifications sent for failed transactions

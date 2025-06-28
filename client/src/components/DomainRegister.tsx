@@ -1,10 +1,9 @@
-
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader, CheckCheck, AlertTriangle, Send } from "lucide-react";
-import { useAccount, useChainId, useWaitForTransactionReceipt, useSwitchChain } from "wagmi";
+import { Loader, CheckCheck, AlertTriangle, Send, Shield, Zap, Globe } from "lucide-react";
+import { useAccount, useChainId, useWaitForTransactionReceipt } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { pepuChain, appConfig, usdcConfig } from "@/config/chain";
@@ -22,7 +21,6 @@ interface DomainRegisterProps {
 export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainRegisterProps) {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
-  const { switchChain, isPending: isSwitchingChain } = useSwitchChain();
   const { toast } = useToast();
   
   const [registrationStatus, setRegistrationStatus] = useState<
@@ -58,9 +56,11 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
   }, [address]);
 
   // Check balance when address or network changes
-  if (address && isCorrectNetwork) {
-    checkUSDCBalance();
-  }
+  useEffect(() => {
+    if (address && isCorrectNetwork) {
+      checkUSDCBalance();
+    }
+  }, [address, isCorrectNetwork, checkUSDCBalance]);
 
   const handleSwitchNetwork = async () => {
     try {
@@ -114,9 +114,6 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
         description: "Your USDC payment is being processed...",
       });
       
-      // Wait for transaction confirmation
-      await tx.wait();
-      
     } catch (error: any) {
       console.error("Registration error:", error);
       setRegistrationStatus("error");
@@ -134,21 +131,29 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
     if (!txHash || !address) return;
     
     try {
-      const provider = window.ethereum;
-      await completeDomainRegistration(
-        selectedDomain.replace('.pepu', ''),
-        address,
-        txHash,
-        provider
-      );
+      // Only proceed to database operations after transaction is confirmed
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const receipt = await provider.getTransactionReceipt(txHash);
       
-      setRegistrationStatus("success");
-      onSuccess(txHash);
-      
-      toast({
-        title: "Domain Registered!",
-        description: `You are now the owner of ${selectedDomain}`,
-      });
+      // Verify transaction was successful
+      if (receipt && receipt.status === 1) {
+        await completeDomainRegistration(
+          selectedDomain.replace('.pepu', ''),
+          address,
+          txHash,
+          provider
+        );
+        
+        setRegistrationStatus("success");
+        onSuccess(txHash);
+        
+        toast({
+          title: "Domain Registered!",
+          description: `You are now the owner of ${selectedDomain}`,
+        });
+      } else {
+        throw new Error("Transaction failed or reverted");
+      }
     } catch (error: any) {
       console.error("Registration processing error:", error);
       setRegistrationStatus("error");
@@ -157,156 +162,189 @@ export function DomainRegister({ selectedDomain, onSuccess, onReset }: DomainReg
       toast({
         variant: "destructive",
         title: "Registration Processing Failed",
-        description: error.message || "Your payment was successful, but there was an issue finalizing your registration.",
+        description: "Transaction failed. Domain was not registered.",
       });
     }
   };
   
-  if (txConfirmed && registrationStatus === "processing") {
-    processRegistration();
-  }
+  // Process registration only when transaction is confirmed
+  useEffect(() => {
+    if (txConfirmed && registrationStatus === "processing") {
+      processRegistration();
+    }
+  }, [txConfirmed, registrationStatus]);
 
   return (
-    <Card className="bg-black/40 backdrop-blur-xl border-cyber-purple/30 shadow-cyber relative overflow-hidden">
-      <div className="absolute inset-0 bg-neon-glow opacity-20 pointer-events-none" />
-      <div className="absolute inset-0 bg-glass-shine animate-shine pointer-events-none" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 pt-20">
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-2000" />
       
-      <CardHeader className="relative z-10">
-        <CardTitle className="text-xl flex items-center gap-2">
-          <span className="bg-gradient-to-r from-cyber-neon to-cyber-purple bg-clip-text text-transparent">
-            Register
-          </span> 
-          <span className="font-mono">{selectedDomain}</span>
-        </CardTitle>
-        <CardDescription className="text-gray-300">
-          Secure your .pepu domain for {appConfig.registrationFee} USDC
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="space-y-4 relative z-10">
-        {!isConnected ? (
-          <div className="bg-glass-dark backdrop-blur-md rounded-lg p-6 text-center border border-white/10">
-            <p className="mb-4 text-gray-300">Connect your wallet to register this domain</p>
-            <div className="inline-block animate-float">
-              <ConnectButton />
-            </div>
-          </div>
-        ) : (
-          <>
-            {!isCorrectNetwork && (
-              <Alert className="bg-amber-900/30 border-amber-500/30 backdrop-blur-md">
-                <AlertTriangle className="h-4 w-4 text-amber-400" />
-                <AlertDescription className="flex items-center justify-between text-amber-200">
-                  <span>Switch to Pepe Unchained V2</span>
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    onClick={handleSwitchNetwork}
-                    className="ml-2 text-xs h-7 px-2 border-amber-500/50 text-amber-300 hover:bg-amber-500/20"
-                  >
-                    Switch Network
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            )}
-          
-            {!hasEnoughBalance && (
-              <Alert variant="destructive" className="bg-red-900/30 border-red-500/30 backdrop-blur-md">
-                <AlertTriangle className="h-4 w-4 text-red-400" />
-                <AlertDescription className="text-red-200">
-                  Insufficient USDC balance. You need at least {appConfig.registrationFee} USDC.
-                </AlertDescription>
-              </Alert>
-            )}
-          
-            <div className="bg-terminal-dark-purple/80 backdrop-blur-md text-white p-6 rounded-lg border border-cyber-purple/20 shadow-neon">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">Domain:</span>
-                  <span className="font-mono text-cyber-neon">{selectedDomain}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">Price:</span>
-                  <span className="font-mono text-cyber-pink">{appConfig.registrationFee} USDC</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">Network:</span>
-                  <span className="font-mono text-cyber-yellow">Pepe Unchained V2</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">Your USDC Balance:</span>
-                  <span className="font-mono text-cyber-blue">{parseFloat(usdcBalance).toFixed(2)} USDC</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">Duration:</span>
-                  <span className="font-mono text-cyber-yellow">1 year</span>
-                </div>
-                <div className="pt-3 border-t border-white/10">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Your wallet:</span>
-                    <span className="font-mono text-cyber-blue truncate max-w-[180px]">{address}</span>
+      <div className="relative container mx-auto px-6 py-20">
+        <div className="max-w-2xl mx-auto">
+          <Card className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl">
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Globe className="w-8 h-8 text-white" />
+              </div>
+              <CardTitle className="text-2xl font-bold text-white mb-2">
+                Register Your Domain
+              </CardTitle>
+              <CardDescription className="text-gray-300 text-lg">
+                Secure <span className="text-purple-300 font-mono">{selectedDomain}</span> for {appConfig.registrationFee} USDC
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              {!isConnected ? (
+                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-8 text-center border border-white/10">
+                  <Shield className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-white mb-2">Connect Your Wallet</h3>
+                  <p className="text-gray-300 mb-6">Connect your wallet to register this domain securely</p>
+                  <div className="[&>div]:!bg-white/10 [&>div]:!backdrop-blur-xl [&>div]:!border-white/20">
+                    <ConnectButton />
                   </div>
                 </div>
-              </div>
-            </div>
+              ) : (
+                <>
+                  {!isCorrectNetwork && (
+                    <Alert className="bg-amber-500/10 border-amber-500/30 text-amber-300">
+                      <AlertTriangle className="h-5 w-5" />
+                      <AlertDescription className="flex items-center justify-between">
+                        <span>Switch to Pepe Unchained V2 network</span>
+                        <Button 
+                          variant="outline"
+                          size="sm"
+                          onClick={handleSwitchNetwork}
+                          className="ml-4 border-amber-500/50 text-amber-300 hover:bg-amber-500/20"
+                        >
+                          Switch Network
+                        </Button>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                
+                  {!hasEnoughBalance && (
+                    <Alert className="bg-red-500/10 border-red-500/30 text-red-300">
+                      <AlertTriangle className="h-5 w-5" />
+                      <AlertDescription>
+                        Insufficient USDC balance. You need at least {appConfig.registrationFee} USDC.
+                        <br />
+                        Your current balance: {parseFloat(usdcBalance).toFixed(2)} USDC
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                
+                  {/* Domain Details */}
+                  <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10">
+                    <h3 className="text-lg font-semibold text-white mb-4">Registration Details</h3>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">Domain:</span>
+                        <span className="font-mono text-purple-300">{selectedDomain}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">Price:</span>
+                        <span className="font-semibold text-white">{appConfig.registrationFee} USDC</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">Network:</span>
+                        <span className="text-blue-300">Pepe Unchained V2</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">Duration:</span>
+                        <span className="text-green-300">1 Year</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">Your USDC Balance:</span>
+                        <span className="font-mono text-blue-300">{parseFloat(usdcBalance).toFixed(2)} USDC</span>
+                      </div>
+                      <div className="pt-4 border-t border-white/10">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-300">Wallet:</span>
+                          <span className="font-mono text-sm text-gray-400 truncate max-w-[200px]">{address}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Features */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10">
+                      <Shield className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                      <div className="text-sm text-gray-300">Secure</div>
+                    </div>
+                    <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10">
+                      <Zap className="w-6 h-6 text-yellow-400 mx-auto mb-2" />
+                      <div className="text-sm text-gray-300">Instant</div>
+                    </div>
+                    <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10">
+                      <Globe className="w-6 h-6 text-blue-400 mx-auto mb-2" />
+                      <div className="text-sm text-gray-300">Decentralized</div>
+                    </div>
+                  </div>
+                  
+                  {registrationStatus === "error" && (
+                    <Alert className="bg-red-500/10 border-red-500/30 text-red-300">
+                      <AlertTriangle className="h-5 w-5" />
+                      <AlertDescription>{errorMessage}</AlertDescription>
+                    </Alert>
+                  )}
+                </>
+              )}
+            </CardContent>
             
-            {registrationStatus === "error" && (
-              <Alert variant="destructive" className="bg-red-900/30 border-red-500/30 backdrop-blur-md">
-                <AlertTriangle className="h-4 w-4 text-red-400" />
-                <AlertDescription className="text-red-200">{errorMessage}</AlertDescription>
-              </Alert>
-            )}
-          </>
-        )}
-      </CardContent>
-      
-      <CardFooter className="flex justify-between relative z-10">
-        <Button 
-          variant="outline"
-          onClick={onReset}
-          disabled={registrationStatus === "sending" || registrationStatus === "processing"}
-          className="border-cyber-purple/30 text-gray-300 hover:bg-cyber-purple/10"
-        >
-          Cancel
-        </Button>
-        <Button 
-          className="bg-gradient-to-r from-cyber-purple to-cyber-neon text-white shadow-neon hover:shadow-cyber transition-all duration-300"
-          disabled={
-            !isConnected || 
-            !isCorrectNetwork || 
-            !hasEnoughBalance || 
-            registrationStatus === "sending" || 
-            registrationStatus === "processing" ||
-            registrationStatus === "success"
-          }
-          onClick={handleRegister}
-        >
-          {registrationStatus === "idle" && (
-            <>
-              <Send className="mr-2 h-4 w-4" />
-              Register Domain
-            </>
-          )}
-          {registrationStatus === "sending" && (
-            <>
-              <Loader className="mr-2 h-4 w-4 animate-spin" />
-              Sending Transaction...
-            </>
-          )}
-          {registrationStatus === "processing" && (
-            <>
-              <Loader className="mr-2 h-4 w-4 animate-spin" />
-              Confirming Payment...
-            </>
-          )}
-          {registrationStatus === "success" && (
-            <>
-              <CheckCheck className="mr-2 h-4 w-4" />
-              Registered!
-            </>
-          )}
-        </Button>
-      </CardFooter>
-    </Card>
+            <CardFooter className="flex justify-between pt-6">
+              <Button 
+                variant="outline"
+                onClick={onReset}
+                disabled={registrationStatus === "sending" || registrationStatus === "processing"}
+                className="border-white/20 text-gray-300 hover:bg-white/10 backdrop-blur-sm"
+              >
+                Back
+              </Button>
+              <Button 
+                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
+                disabled={
+                  !isConnected || 
+                  !isCorrectNetwork || 
+                  !hasEnoughBalance || 
+                  registrationStatus === "sending" || 
+                  registrationStatus === "processing" ||
+                  registrationStatus === "success"
+                }
+                onClick={handleRegister}
+              >
+                {registrationStatus === "idle" && (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Register Domain
+                  </>
+                )}
+                {registrationStatus === "sending" && (
+                  <>
+                    <Loader className="mr-2 h-4 w-4 animate-spin" />
+                    Sending Transaction...
+                  </>
+                )}
+                {registrationStatus === "processing" && (
+                  <>
+                    <Loader className="mr-2 h-4 w-4 animate-spin" />
+                    Confirming Payment...
+                  </>
+                )}
+                {registrationStatus === "success" && (
+                  <>
+                    <CheckCheck className="mr-2 h-4 w-4" />
+                    Registered!
+                  </>
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 }
